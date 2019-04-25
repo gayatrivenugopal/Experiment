@@ -91,3 +91,28 @@ def get_sentences(group_no):
     for row in rows:
         sentences.append(row['sentence'])
     return sentences
+
+def store_state(pid, sentence_number, sentences_complete):
+    """ Store the current state of the participant.
+
+    Keyword Arguments:
+        pid (str): the participant ID
+        sentence_number: the index of the sentence that was last displayed to the participant
+        sentences_complete: a flag, which, if 1, indicates that all the sentences
+        have been displayed to the user, and if 0, indicates that more sentences are remaining.
+
+    Returns:
+        (dict): the status which is 1, if successful and -1, if unsuccessful and also returns the
+        description of the error.
+    """
+    try:
+        #search for an existing state for the pid
+        query = {'pid': pid}
+        cursor = database['State'].find_one(query)
+        if cursor is None:
+            database.State.insert_one({'pid': pid, 'sentence_number': sentence_number, 'sentences_complete': sentences_complete})
+        else:
+            database.State.update_one(query, {'$set': {'pid': pid, 'sentence_number': sentence_number, 'sentences_complete': sentences_complete}})
+        return {'status': 1, 'data': None}
+    except Exception as e:
+        return {'status': -1, 'data': str(e)}
