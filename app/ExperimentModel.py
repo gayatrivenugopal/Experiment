@@ -116,3 +116,26 @@ def store_state(pid, sentence_number, sentences_complete):
         return {'status': 1, 'data': None}
     except Exception as e:
         return {'status': -1, 'data': str(e)}
+
+def state_exists(pid):
+    """ Check if the participant has a state in the database.
+
+    Keyword Arguments:
+        pid (str): the participant ID
+
+    Returns:
+        (dict): the state 1 if it exists, and 0, otherwise. The key 'data' would
+        consist of the state details if the state exists, and 0, otherwise. If
+        an error occurs, state would store -1 and data would consist of the
+        description of the error.
+    """
+    try:
+        #search for an existing state for the pid
+        query = {'pid': pid}
+        cursor = database['State'].find_one(query)
+        if cursor is None:
+            return {'state': 0, 'data': 0}
+        else:
+            return {'state': 1, 'data': {'sentence_number': cursor['sentence_number'], 'sentences_complete': cursor['sentences_complete']}}
+    except Exception as e:
+        return {'state': -1, 'data': str(e)}

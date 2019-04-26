@@ -14,6 +14,7 @@ import json
 
 from .ExperimentModel import validate_pid
 from .ExperimentModel import get_sentences
+from .ExperimentModel import state_exists
 from .ExperimentModel import store_state
 
 
@@ -71,6 +72,16 @@ def login():
 def sentence():
     """ Display the current sentence.
     """
+    #check if we came to the page after the login page
+    if request.referrer.find('login'):
+        #check if state exists in the database. If so, update the session variables. Take care of sentences_complete.
+        state_info = state_exists(session['pid'])
+        print(state_info, file = sys.stdout)
+        if state_info['state'] == 1:
+            session['sentence_no'] = state_info['data']['sentence_number'] -1 #this will be incremented subsequently
+            if state_info['data']['sentences_complete'] != None:
+                session['sentences_complete'] = state_info['data']['sentences_complete']
+
     #retrieve all the sentences allotted the group
     sentences = get_sentences(session['group_id'])
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
@@ -103,7 +114,6 @@ def store_tokens():
 def update_sentence_number():
     """ Update the current sentence number.
     """
-    #TODO-26th April: check if state exists in the database. If so, update the session variables.
     #initialize sentence_no in the session
     if 'sentence_no' not in session and 'sentences_complete' not in session:
         session['sentence_no'] = 0
