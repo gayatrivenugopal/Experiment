@@ -165,7 +165,7 @@ def words():
     print(request.referrer)
     if request.referrer.find('words') != -1:
         session['word_no'] += 1
-    else:
+    elif state['data'] is None:
         session['word_no'] = 0
         session['word_sentence_no'] = 0
     #display the word and its synonyms
