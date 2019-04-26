@@ -5,18 +5,18 @@
     </head>
     <body>
         <center>
-            <form name='frm' id='frm' action = 'http://localhost:5000/words' method='POST'>
+            <form name='frm' id='frm' method='POST'>
                 <font color='#383838'><h2>Complex Word Identification in Hindi Sentences</h2>
                 <h3><span id='pid'>Participant ID: {{pid}}</span></h3>
                 <center><span id='sentence'>{{sentence}}</span></center><br><br>
                 <input type='button' id='btn' value='Next'>
                 <div align = right><span id='number'>{{sentence_number}}</span></div>
-
             </form>
         </center>
         <script>
         $("#btn").click(function(){
-            var data={"words":'word'};
+            //TODO: word1, word2 etc. to be replaced with the selected words
+            var data={'words':['सांस्कृतिक', 'वैविध्य', 'संस्कृति', 'आंतरिक', 'विशिष्टता']};
             $.ajax({
                 url: '/store_tokens',
                 type: 'POST',

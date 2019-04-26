@@ -4,10 +4,14 @@
     </head>
     <body>
         <center>
-            <form name='frm' method='POST'>
+            <form name='frm' method='POST' action = 'http://localhost:5000/words' >
                 <font color='#383838'><h2>Complex Word Identification in Hindi Sentences</h2>
                 <h3>Participant ID: {{pid}}</h3>
-                <input type='submit' value='Proceed'>
+                <h3>{% for word in words %}
+                    <span> {{word}} </span>
+                    {% endfor %}
+                </h3>
+                <input type='submit' value='Next'>
             </form>
         </center>
     </body>

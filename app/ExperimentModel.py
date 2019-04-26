@@ -92,7 +92,7 @@ def get_sentences(group_no):
         sentences.append(row['sentence'])
     return sentences
 
-def store_state(pid, sentence_number, sentences_complete):
+def store_sentence_state(pid, sentence_number, sentences_complete):
     """ Store the current state of the participant.
 
     Keyword Arguments:
@@ -108,16 +108,40 @@ def store_state(pid, sentence_number, sentences_complete):
     try:
         #search for an existing state for the pid
         query = {'pid': pid}
-        cursor = database['State'].find_one(query)
+        cursor = database['SentenceState'].find_one(query)
         if cursor is None:
-            database.State.insert_one({'pid': pid, 'sentence_number': sentence_number, 'sentences_complete': sentences_complete})
+            database.SentenceState.insert_one({'pid': pid, 'sentence_number': sentence_number, 'sentences_complete': sentences_complete})
         else:
-            database.State.update_one(query, {'$set': {'pid': pid, 'sentence_number': sentence_number, 'sentences_complete': sentences_complete}})
+            database.SentenceState.update_one(query, {'$set': {'pid': pid, 'sentence_number': sentence_number, 'sentences_complete': sentences_complete}})
         return {'status': 1, 'data': None}
     except Exception as e:
         return {'status': -1, 'data': str(e)}
 
-def state_exists(pid):
+def store_word_state(pid, sentence_number, word_number):
+    """ Store the current state of the participant.
+
+    Keyword Arguments:
+        pid (str): the participant ID
+        sentence_number: the index of the sentence that was last displayed to the participant
+        word_number: the index of the word that was last displayed to the participant
+
+    Returns:
+        (dict): the status which is 1, if successful and -1, if unsuccessful and also returns the
+        description of the error.
+    """
+    try:
+        #search for an existing state for the pid
+        query = {'pid': pid}
+        cursor = database['WordsState'].find_one(query)
+        if cursor is None:
+            database.WordsState.insert_one({'pid': pid, 'sentence_number': sentence_number, 'word_number': word_number})
+        else:
+            database.WordsState.update_one(query, {'$set': {'pid': pid, 'sentence_number': sentence_number, 'word_number': word_number}})
+        return {'status': 1, 'data': None}
+    except Exception as e:
+        return {'status': -1, 'data': str(e)}
+
+def sentence_state_exists(pid):
     """ Check if the participant has a state in the database.
 
     Keyword Arguments:
@@ -132,10 +156,78 @@ def state_exists(pid):
     try:
         #search for an existing state for the pid
         query = {'pid': pid}
-        cursor = database['State'].find_one(query)
+        cursor = database['SentenceState'].find_one(query)
         if cursor is None:
             return {'state': 0, 'data': 0}
         else:
             return {'state': 1, 'data': {'sentence_number': cursor['sentence_number'], 'sentences_complete': cursor['sentences_complete']}}
     except Exception as e:
         return {'state': -1, 'data': str(e)}
+
+def words_state_exists(pid):
+    import sys
+    """ Check if the participant has a state in the database.
+
+    Keyword Arguments:
+        pid (str): the participant ID
+
+    Returns:
+        (dict): the state 1 if it exists, and 0, otherwise. The key 'data' would
+        consist of the state details if the state exists, and None, otherwise. If
+        an error occurs, state would store -1 and data would consist of the
+        description of the error.
+    """
+    try:
+        #search for an existing state for the pid
+        query = {'pid': pid}
+        cursor = database['WordsState'].find_one(query)
+        if cursor is None:
+            return {'state': 1, 'data': None}
+        else:
+            print(cursor, file=sys.stdout)
+            return {'state': 1, 'data': cursor}
+    except Exception as e:
+        return {'state': -1, 'data': str(e)}
+
+def store_words(pid, words, sentence_number):
+    """ Store the words selected by the participant.
+
+    Keyword Arguments:
+        pid (str): the participant ID
+        words (list): the words selected by the participant
+        sentence_number: the index of the sentence that was last displayed to the participant
+
+    Returns:
+        (dict): the status which is 1, if successful and -1, if unsuccessful and also returns the
+        description of the error.
+    """
+    try:
+        database.ComplexWords.insert_one({'pid': pid, 'words': words, 'sentence_number': sentence_number})
+        return {'status': 1, 'data': None}
+    except Exception as e:
+        return {'status': -1, 'data': str(e)}
+
+def get_words(pid):
+    """ Return the words selected by the user for all the sentences.
+    Keyword Argument:
+        pid (str): the participant ID
+    Returns:
+        (dict): consists of the status which is 1, if successful and if records exist,
+        0 if successful and if no records exist, and -1, if unsuccessful.
+        The key 'data' consists of None, if no records were found. If records exist,
+        a dictionary consisting of the sentence number and the corresponding words would be
+        stored in 'data'.
+    """
+    try:
+        #search for an existing state for the pid
+        query = {'pid': pid}
+        temp = {}
+        cursor = database['ComplexWords'].find(query)
+        if cursor is None:
+            return {'status': 0, 'data': None}
+        else:
+            for document in cursor:
+                temp[document['sentence_number']] = document['words']
+        return {'status': 1, 'data': temp}
+    except Exception as e:
+        return {'status': -1, 'data': str(e)}

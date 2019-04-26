@@ -14,11 +14,13 @@ import json
 
 from .ExperimentModel import validate_pid
 from .ExperimentModel import get_sentences
-from .ExperimentModel import state_exists
-from .ExperimentModel import store_state
+from .ExperimentModel import sentence_state_exists
+from .ExperimentModel import words_state_exists
+from .ExperimentModel import store_sentence_state
+from .ExperimentModel import store_word_state
+from .ExperimentModel import store_words
+from .ExperimentModel import get_words
 
-
-#TODO: what if power goes during the task, resume from the last sentence
 #TODO: logout to clear the session on all the templates
 app = Flask(__name__)
 
@@ -30,6 +32,7 @@ if __name__ == '__main__':
     session['pid'] = None
     session['sentences'] = None
     session['sentence_no'] = 0
+    session['word_sentence_no'] = 0
     session['sentences_complete'] = 0
 
 app.secret_key = "123"
@@ -63,7 +66,7 @@ def login():
         'Ethical approval received from the Internal Ethics Committee, Symbiosis International (Deemed University)</font></h4><br></center><h4>' + instructions + '</h4>'
         #display the header text and the instructions
         return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome (' + session['group_id'] + ') ' + cursor['pid'] + '!</b></font></div>' \
-        + str + '<br><br><center><input type=button value = "Start Task" size = 20 onClick = "location.assign(\'http://localhost:5000/sentence\')")></center>'))
+        + str + '<br><br><center><input type=button value = "Begin Task" size = 20 onClick = "location.assign(\'http://localhost:5000/sentence\')")></center>'))
     #display an error message if the participant ID does not exist
     return render_template('landing.html', text = Markup('<center><h3>Invalid ID!</h3><br>' + '<input type=button value = "Go Back" size = 20 onClick = "history.go(-1)"></center>'))
 
@@ -75,8 +78,7 @@ def sentence():
     #check if we came to the page after the login page
     if request.referrer.find('login'):
         #check if state exists in the database. If so, update the session variables. Take care of sentences_complete.
-        state_info = state_exists(session['pid'])
-        print(state_info, file = sys.stdout)
+        state_info = sentence_state_exists(session['pid'])
         if state_info['state'] == 1:
             session['sentence_no'] = state_info['data']['sentence_number'] -1 #this will be incremented subsequently
             if state_info['data']['sentences_complete'] != None:
@@ -88,7 +90,7 @@ def sentence():
     update_sentence_number()
     if 'sentences_complete' in session and session['sentences_complete'] == 1:
         #display the words task
-        return render_template('words.html', pid = session['pid'])
+        return render_template('begin_words_task.html', pid = session['pid'])
     #display the current sentence
     return render_template('sentences.html', sentence = sentences[session['sentence_no']], sentence_number = session['sentence_no']+1, pid = session['pid'])
 
@@ -99,8 +101,9 @@ def store_tokens():
     """
     #retrieve the JSON object passed in the request
     jsdata = request.get_json()
-    #TODO: store the words
-    print('Words saved: ' + jsdata['words'], file = sys.stdout)
+    #store the words - pid, sentence_no, list of words
+    store_words(session['pid'], jsdata['words'], session['sentence_no'])
+
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
     update_sentence_number()
     if 'sentences_complete' in session and session['sentences_complete'] == 1:
@@ -128,12 +131,58 @@ def update_sentence_number():
         sentences_complete = None
     else:
         sentences_complete = session['sentences_complete']
-    status = store_state(session['pid'], session['sentence_no'], sentences_complete)
-    print(status, file = sys.stdout)
+    status = store_sentence_state(session['pid'], session['sentence_no'], sentences_complete)
+
+@app.route('/begin_words_task', methods=['GET', 'POST'])
+def begin_words_task():
+    """ Display the instructions for the task.
+    """
+    return render_template('begin_words_task.html')
 
 @app.route('/words', methods=['GET', 'POST'])
 def words():
-    """ Display the word and its synonyms.
+    """ Display the words and its synonyms.
     """
-    #TODO: retrieve the selected words from the database, and pass their synonyms to the view
-    return render_template('words.html', pid=session['pid'])
+    #restore the state if any
+    state = words_state_exists(session['pid'])
+
+    if state['data'] is None:
+        session['word_sentence_no'] = 0
+        session['word'] = None
+    else:
+        session['word_sentence_no'] = int(state['data']['sentence_number'])
+        session['word_no'] = state['data']['word_number']
+
+    #retrieve the words from the database
+    words_dict = get_words(session['pid'])
+    sentence_words = []
+    if words_dict['status'] == 1 and words_dict['data'] != None:
+        for key,value in words_dict['data'].items():
+            sentence_words.append(value)
+    else:
+        #TODO: display the final template and logout
+        return render_template('end.html')
+    print(request.referrer)
+    if request.referrer.find('words') != -1:
+        session['word_no'] += 1
+    else:
+        session['word_no'] = 0
+        session['word_sentence_no'] = 0
+    #display the word and its synonyms
+    i = 0
+    if 'word_no' in session and session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
+        #increment the word_sentence_no in the session
+        session['word_sentence_no'] += 1
+        session['word_no'] = 0
+        if session['word_sentence_no'] >= len(sentence_words):
+            #TODO: display the final template and logout
+            return render_template('end.html')
+    for words in sentence_words[session['word_sentence_no']]:
+        #check if the script has reached the word to be displayed
+        if i == session['word_no']:
+            #store this state in the words_state collection
+            status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+            #TODO: pass the set of the word and its synonyms to the template
+            return render_template('words.html', pid=session['pid'], words = [words_dict['data'][session['word_sentence_no']][i], 'abc', 'pqr'])
+        i += 1
+    return render_template('words.html', pid=session['pid'], words={'words':[]})
