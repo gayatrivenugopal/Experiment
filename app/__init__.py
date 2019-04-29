@@ -20,6 +20,9 @@ from .ExperimentModel import store_sentence_state
 from .ExperimentModel import store_word_state
 from .ExperimentModel import store_words
 from .ExperimentModel import get_words
+from .ExperimentModel import get_synonyms
+from .ExperimentModel import get_root
+
 
 #TODO: logout to clear the session on all the templates
 app = Flask(__name__)
@@ -182,7 +185,23 @@ def words():
         if i == session['word_no']:
             #store this state in the words_state collection
             status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-            #TODO: pass the set of the word and its synonyms to the template
-            return render_template('words.html', pid=session['pid'], words = [words_dict['data'][session['word_sentence_no']][i], 'abc', 'pqr'])
+            #pass the set of the word and its synonyms to the template
+            #retrieve the synonyms as a set
+            synonyms = get_synonyms(words_dict['data'][session['word_sentence_no']][i])
+            if synonyms == None:
+                #get the root and retrieve its synonyms
+                root = get_root(words_dict['data'][session['word_sentence_no']][i])
+                synonyms = get_synonyms(root)
+            synonyms.add(words_dict['data'][session['word_sentence_no']][i])
+            if len(synonyms) == 0:
+                words() #TODO: test if this works
+            return render_template('words.html', pid=session['pid'], words = [synonyms])
         i += 1
     return render_template('words.html', pid=session['pid'], words={'words':[]})
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    """ Clear the session and take the user to the first page.
+    """
+    session.clear()
+    return render_template('index.html')

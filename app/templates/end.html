@@ -1,8 +1,12 @@
 <html>
     <head>
         <title>Complex Word Identification in Hindi Sentences</title>
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
     </head>
     <body>
+        <form name='frm' action='http://localhost:5000/logout' method='POST'>
+            <input type='submit' class = 'topright' value='Logout'>
+        </form>
         <center>
             <form name='frm' method='POST'>
                 <font color='#383838'><h2>Complex Word Identification in Hindi Sentences</h2>

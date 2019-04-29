@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 from pymongo import MongoClient
 
+import stanfordnlp
+
+
 #connect to the MongoDB instance
 client = MongoClient('localhost:27017')
 database = client.Experiment
@@ -231,3 +234,40 @@ def get_words(pid):
         return {'status': 1, 'data': temp}
     except Exception as e:
         return {'status': -1, 'data': str(e)}
+
+def get_synonyms(word):
+    """ Return the synonyms of the word.
+    Keyword Argument:
+        word (str): the word whose synonyms are to be retrieved
+    Returns:
+        (set): set of synonyms if present, and None, otherwise
+    """
+    try:
+        query = {'word': word}
+        cursor = database['Words'].find(query)
+        synonym_set = set()
+        if cursor is None:
+            return None
+        for document in cursor:
+            if len(document['synsets']) > 0:
+                for key, synset in document['synsets'].items():
+                    synonyms = synset['synonyms'].split(',')
+                    for synonym in synonyms:
+                        synonym_set.add(synonym.strip())
+        if len(synonym_set) == 0:
+            return None
+        return synonym_set
+    except Exception as e:
+        print(e)
+        return None
+
+def get_root(word):
+    """ Return the root form of the specified word.
+    Required argument:
+	word (str): the word whose root form is to be retrieved
+    """
+    nlp = stanfordnlp.Pipeline(lang='hi')
+    doc = nlp(word)
+    for sentence in doc.sentences:
+        for word in sentence.words:
+            return word.lemma
