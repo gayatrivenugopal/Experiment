@@ -1,47 +1,80 @@
 <html>
-    <head>
-        <title>Complex Word Identification in Hindi Sentences</title>
-        <script type=text/javascript src="/static/jquery.js"></script>
-        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
-    </head>
-    <body>
-        <form name='frm' action='http://localhost:5000/logout' method='POST'>
-            <input type='submit' class = 'topright' value='Logout'>
-        </form>
-        <center>
-            <form name='frm' id='frm' method='POST'>
-                <font color='#383838'><h2>Complex Word Identification in Hindi Sentences</h2>
-                <h3><span id='pid'>Participant ID: {{pid}}</span></h3>
-                <center><span id='sentence'>{{sentence}}</span></center><br><br>
-                <input type='button' id='btn' value='Next'>
-                <div align = right><span id='number'>{{sentence_number}}</span></div>
-            </form>
-        </center>
-        <script>
-        $("#btn").click(function(){
-            //TODO: word1, word2 etc. to be replaced with the selected words
-            var data={'words':['सांस्कृतिक', 'वैविध्य', 'संस्कृति', 'आंतरिक', 'विशिष्टता']};
-            $.ajax({
-                url: '/store_tokens',
-                type: 'POST',
-                dataType: 'json',
-                data: JSON.stringify(data),
-                contentType:"application/json; charset=UTF-8",
-                success: function(response) {
-                    console.log(response);
-                    if(response['sentence_flag'] == 0)
-                        $('#frm').submit();
-                    else {
-                        $("#sentence").html(response['sentence']);
-                        $("#pid").html(response['pid']);
-                        $("#number").html(response['sentence_number']);
-                    }
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            });
-        });
-        </script>
-    </body>
+
+<head>
+  <title>Complex Word Identification in Hindi Sentences</title>
+  <script type=text/javascript src="/static/jquery.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Montserrat" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+  <style>
+    .clicked{
+      background-color: #FEDC52;
+      padding: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" style="margin-bottom:20px">
+    <h1 class="text-center" style="font-family:&#39;Abril Fatface&#39;, cursive;margin-top:10px;font-size:30px;margin-bottom:0;border-bottom:1px solid grey;background-color:rgba(193,193,193,0.29);"><br />Complex Word Identification in Hindi
+      Sentences<br /><br /></h1>
+  </div>
+  <form name='frm' action='http://localhost:5000/logout' method='POST'>
+    <div class="d-block container"><button class="btn btn-outline-danger btn-sm" value="Logout" type="submit">Logout</button></div>
+  </form>
+
+  <center>
+    <form name='frm' id='frm' method='POST'>
+
+      <div style="margin-top:36px;">
+        <h4 class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;">Participant Id :{{pid}}</h4>
+      </div>
+      <center><div id='sentence'>{{sentence}}</div></center><br><br>
+      <div class="d-block" style="text-align:center;"><button id="btn1" class="btn btn-outline-info btn-sm" type="submit" style="margin-top:20px;">Next</button></div>
+      <div align=right><span id='number'>{{sentence_number}}</span></div>
+    </form>
+  </center>
+  <script>
+    var wordSelectedArr=[];
+    $(document).ready(function(){
+        var t = $( "#sentence" ).text().split(" ").join( "</span> <span>" );
+        $( "#sentence" ).first().html( "<span>" + t + "</span>" );
+        $( "span" ).click(function() {
+        $("span").css("cursor","pointer");
+        $( this ).toggleClass('clicked');
+      });
+      });
+
+    $("#btn1").click(function() {
+      $("span.clicked").each(function(){
+        wordSelectedArr.push(this.textContent);
+      });
+      //TODO: word1, word2 etc. to be replaced with the selected words
+      var data = {
+        'words': wordSelectedArr
+      };
+      $.ajax({
+        url: '/store_tokens',
+        type: 'POST',
+        dataType: 'json',
+        data: JSON.stringify(data),
+        contentType: "application/json; charset=UTF-8",
+        success: function(response) {
+          console.log(response);
+          if (response['sentence_flag'] == 0)
+            $('#frm').submit();
+          else {
+            $("#sentence").html(response['sentence']);
+            $("#pid").html(response['pid']);
+            $("#number").html(response['sentence_number']);
+          }
+        },
+        error: function(error) {
+          console.log(error);
+        }
+      });
+    });
+  </script>
+</body>
+
 </html>

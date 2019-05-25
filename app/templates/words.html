@@ -1,22 +1,141 @@
 <html>
-    <head>
-        <title>Complex Word Identification in Hindi Sentences</title>
-        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
-    </head>
-    <body>
-        <form name='frm' action='http://localhost:5000/logout' method='POST'>
-            <input type='submit' class = 'topright' value='Logout'>
-        </form>
-        <center>
-            <form name='frm' method='POST' action = 'http://localhost:5000/words' >
-                <font color='#383838'><h2>Complex Word Identification in Hindi Sentences</h2>
-                <h3>Participant ID: {{pid}}</h3>
-                <h3>{% for word in words %}
-                    <span> {{word}} </span>
-                    {% endfor %}
-                </h3>
-                <input type='submit' value='Next'>
-            </form>
-        </center>
-    </body>
+
+<head>
+  <title>Complex Word Identification in Hindi Sentences</title>
+  <link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Montserrat" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="{{ url_for('static',filename='jquery.js') }}"> </script>
+  <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+  <script>
+  wordArr1=""
+    $(document).ready(function(){
+      wordArr=$("#word").html().replace(/(^{)|(}$)/g, "").split(",");
+      wordArr1=wordArr;
+      $("#word").html("");
+      str_words="";
+      for (i=0;i<wordArr.length;i++){
+        str_words+="<div class='row'><div class='col-md-6 d-flex justify-content-center align-items-center'><h3 id='word_final'>"+wordArr[i]+"</h3></div><div class='row'><div class='form-group col-md-6'><div class='col-md-6 input-group rank"+i+"'><div class='btn-group' role='group' ><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='1'>1</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='2'>2</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='3'>3</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='4'>4</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='5'>5</button></div></div></div></div></div></div><br />";
+      }
+      $("#start").html(str_words);
+
+      rank=new Array();
+      a=new Array();
+      for (i=0;i<wordArr.length;i++){
+        a.push(".rank"+i);
+        BtnGroup("rank"+i);
+      }
+
+      function BtnGroup(divid) {
+            $('.'+divid+' button').click(function() {
+                $('.'+divid+' button').attr("aria-pressed","false");
+                $('.'+divid+' button').removeClass("active");
+                $(this).attr("aria-pressed","true");
+                $(this).addClass("active");
+             });
+        }
+
+    });
+wordRankArr=new Array();
+    function checkRedirection(){
+      if ($('button.active').length==wordArr.length){
+        for (i in a){
+            rank.push($(a[i]+' button.active').val());
+          }
+          alert(rank);
+          // wordRankArr=new Array();
+          for (i=0;i<wordArr1.length;i++){
+            var temp={};
+            temp[wordArr[i]]=rank[i];
+            wordRankArr.push(temp);
+          }
+          return true;
+      }
+        else {
+          alert("Please rank all the words!");
+          return false;
+        }
+
+    }
+
+    // wordRankArr=new Array();
+    // for (i=0;i<wordArr1.length;i++){
+    //   var temp={};
+    //   temp[wordArr[i]]=rank[i];
+    //   wordRankArr.push(temp);
+    // }
+  </script>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css" rel="stylesheet" type="text/css">
+  <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/bootstrap-slider.min.js"></script>
+
+</head>
+
+<body>
+
+  <div class="container">
+    <div style="margin-bottom:20px">
+      <h1 class="text-center" style="font-family:&#39;Abril Fatface&#39;, cursive;margin-top:10px;font-size:30px;margin-bottom:0;border-bottom:1px solid grey;background-color:rgba(193,193,193,0.29);"><br />Complex Word Identification in Hindi
+        Sentences<br /><br /></h1>
+    </div>
+    <form name='frm' action='http://localhost:5000/logout' method='POST'>
+      <div class="d-block container"><button class="btn btn-outline-danger btn-sm" value="Logout" type="submit">Logout</button></div>
+    </form>
+    <center>
+      <form name='frm' method='POST' id="frm" action="http://localhost:5000/words" onsubmit="return final_check()">
+        <div style="margin-top:36px;">
+          <h4 class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;">Participant Id : {{pid}}</h4>
+        </div>
+        <h3>{% for word in words %}
+          <p style="font-size:20px;" id="word">{{word}}</p>
+          {% endfor %}
+        </h3>
+        <div class="container" id="start">
+
+        </div>
+        <br />
+  </div>
+
+  <div class="d-block" style="text-align:center;"><button class="btn btn-outline-info btn-sm final" type="submit" style="margin-top:20px;">Next</button></div>
+
+  </form>
+  </center>
+  </div>
+<script>
+function store_ranks() {
+  alert("hi"+wordRankArr);
+    var data={'words': wordRankArr};
+    console.log(data);
+    $.ajax({
+        url: '/store_ranks',
+        type: 'POST',
+        dataType: 'json',
+        data: JSON.stringify(data),
+        contentType:"application/json; charset=UTF-8",
+        success: function(response) {
+            console.log(response);
+            // $("#frm").submit();
+        },
+        error: function(error) {
+            console.log(error);
+        }
+    });
+}
+
+function final_check(){
+  if (checkRedirection()){
+    store_ranks();
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+</script>
+
+
+</body>
+
 </html>
