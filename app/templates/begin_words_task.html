@@ -1,21 +1,40 @@
 <html>
-    <head>
-        <title>Complex Word Identification in Hindi Sentences</title>
-        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
-    </head>
-    <body>
-        <form name='frm' action='http://localhost:5000/logout' method='POST'>
-            <input type='submit' class = 'topright' value='Logout'>
-        </form>
-        <center>
-            <form name='frm' method='POST' action='http://localhost:5000/words'>
-                <font color='#383838'><h2>Complex Word Identification in Hindi Sentences</h2>
-                <h3>Participant ID: {{pid}}</h3>
-                <h3>Congratulations! You have successfully completed Task 1.<br>
-                Task 2 consists of rating the words displayed on the screen based on their complexity.<br>
-            The lower the number, the simpler the word. Click on the button to begin!</h3>
-                <input type='submit' value='Begin Task'>
-            </form>
-        </center>
-    </body>
+
+<head>
+  <title>Complex Word Identification in Hindi Sentences</title>
+  <link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Montserrat" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+</head>
+
+<body>
+
+  <div class="container" >
+    <div style="margin-bottom:20px">
+      <h1 class="text-center" style="font-family:&#39;Abril Fatface&#39;, cursive;margin-top:10px;font-size:30px;margin-bottom:0;border-bottom:1px solid grey;background-color:rgba(193,193,193,0.29);"><br />Complex Word Identification in Hindi
+        Sentences<br /><br /></h1>
+    </div>
+    <form name='frm' action='http://localhost:5000/logout' method='POST'>
+      <div class="d-block container"><button class="btn btn-outline-danger btn-sm" value="Logout" type="submit">Logout</button></div>
+    </form>
+    <center>
+      <form name='frm' method='POST' action='http://localhost:5000/words'>
+        <div style="margin-top:36px;">
+          <h4 class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;">Participant Id :{{pid}}</h4>
+        </div>
+        <div style="margin-top:36px;">
+          <h5 class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;">
+            Congratulations! You have successfully completed Task 1.<br>
+            Task 2 consists of rating the words displayed on the screen based on their complexity.<br>
+            The lower the number, the simpler the word. Click on the button to begin!
+          </h5>
+        </div>
+        <div class="d-block" style="text-align:center;"><button class="btn btn-outline-dark btn-sm" type="submit" style="margin-top:20px;">Begin Task</button></div>
+      </form>
+    </center>
+  </div>
+
+</body>
+
 </html>

@@ -210,6 +210,9 @@ def store_words(pid, words, sentence_number):
     except Exception as e:
         return {'status': -1, 'data': str(e)}
 
+
+
+
 def get_words(pid):
     """ Return the words selected by the user for all the sentences.
     Keyword Argument:
@@ -251,7 +254,7 @@ def get_synonyms(word):
         for document in cursor:
             if len(document['synsets']) > 0:
                 for key, synset in document['synsets'].items():
-                    synonyms = synset['synonyms'].split(',')
+                    synonyms = synset['synonyms'].split(",")
                     for synonym in synonyms:
                         synonym_set.add(synonym.strip())
         if len(synonym_set) == 0:
@@ -260,6 +263,23 @@ def get_synonyms(word):
     except Exception as e:
         print(e)
         return None
+def store_word_ranks(pid, words):
+    """ Store the words and their corresponding ranks selected by the participant.
+
+    Keyword Arguments:
+        pid (str): the participant ID
+        words (dict): the words selected by the participant along with the ranks
+
+    Returns:
+        (dict): the status which is 1, if successful and -1, if unsuccessful and also returns the
+        description of the error.
+    """
+    try:
+        for key, value in words.items():
+            database.RankedWords.insert_one({'pid': pid, 'word': key, 'complexity': value})
+        return {'status': 1, 'data': None}
+    except Exception as e:
+        return {'status': -1, 'data': str(e)}
 
 def get_root(word):
     """ Return the root form of the specified word.

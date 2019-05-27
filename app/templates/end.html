@@ -1,17 +1,21 @@
 <html>
     <head>
         <title>Complex Word Identification in Hindi Sentences</title>
-        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
+        <link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Montserrat" rel="stylesheet">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
     </head>
     <body>
-        <form name='frm' action='http://localhost:5000/logout' method='POST'>
-            <input type='submit' class = 'topright' value='Logout'>
-        </form>
-        <center>
-            <form name='frm' method='POST'>
-                <font color='#383838'><h2>Complex Word Identification in Hindi Sentences</h2>
-                <h3>Thank You</h3>
-            </form>
-        </center>
+
+<div class="container">
+  <div style="margin-bottom:20px">
+    <h1 class="text-center" style="font-family:&#39;Abril Fatface&#39;, cursive;margin-top:10px;font-size:30px;margin-bottom:0;border-bottom:1px solid grey;background-color:rgba(193,193,193,0.29);"><br />Complex Word Identification in Hindi
+      Sentences<br /><br /></h1>
+  </div>
+  <form name='frm' action='http://localhost:5000/logout' method='POST'>
+    <div class="d-block text-center"><button class="btn btn-outline-success btn-sm" value="Logout" type="submit">Logout</button></div>
+  </form>
+  <h3 style="font-family:Montserrat, sans-serif;font-weight:800; color: green;" class="text-center">Thank You!</h3>
+</div>
     </body>
 </html>

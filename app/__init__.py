@@ -22,6 +22,7 @@ from .ExperimentModel import store_words
 from .ExperimentModel import get_words
 from .ExperimentModel import get_synonyms
 from .ExperimentModel import get_root
+from .ExperimentModel import store_word_ranks
 
 
 #TODO: logout to clear the session on all the templates
@@ -58,20 +59,28 @@ def login():
     if cursor is not None:
         #store the group number in the session
         session['group_id'] = cursor['gid'].replace('cwig','')
-        instructions = '<u>Instructions</u><br><br>A sentence will be displayed in the subsequent screens.<br>You are required to read the sentence and select (click on) the word/s that \
-        you do not understand the meaning of.<br>You are required to select the word even if you guessed the meaning based on the context.<br>'\
-        'Please note that you cannot go back to a previous sentence/screen.<br>'
-        str = '<center><font color=\'#383838\'><h2>Complex Word Identification in Hindi Sentences</h2>'\
-        '<h4>Principal Investigator: Gayatri Venugopal, Symbiosis Institute of Computer Studies and Research<br><br>'\
-        'Co-Investigator: Dr. Dhanya Pramod, Symbiosis Centre for Information Technology<br><br>'\
-        'Symbiosis International (Deemed University), Pune, India<br><br>'\
-        'Project funded by Symbiosis Centre for Research and Innovation, Symbiosis International (Deemed University)<br><br>'\
-        'Ethical approval received from the Internal Ethics Committee, Symbiosis International (Deemed University)</font></h4><br></center><h4>' + instructions + '</h4>'
+
+        instructions = '<div class="card"><div class="card-body">'\
+        '<h5 style="font-family:Montserrat, sans-serif;font-weight:500;border-bottom:1px dashed grey;padding:5px;">Instructions</h5>'\
+        '<p style="font-family:Montserrat, sans-serif;font-style:bold;font-size:13px;">'\
+        '⁞ A sentence will be displayed in the subsequent screens.<br />'\
+        '⁞ You are required to read the sentence and select (click on) the word/s that you do not understand the meaning of.<br />'\
+        '⁞ You are required to select the word even if you guessed the meaning based on the context.<br />'\
+        '⁞ Please note that you cannot go back to a previous sentence/screen.<br /></p></div></div>'
+
+        str1 = '<div><p class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;font-size:13px;margin-bottom:0px;margin-top:5px;">'\
+        '<br />Principal Investigator: Gayatri Venugopal, Symbiosis Institute of Computer Studies and Research<br /><br />'\
+        'Co-Investigator: Dr. Dhanya Pramod, Symbiosis Centre for Information Technology<br /><br />'\
+        'Symbiosis International (Deemed University),'\
+        'Pune, India<br /><br />'\
+        'Project funded by Symbiosis Centre for Research and Innovation, Symbiosis International (Deemed University)<br /><br />'\
+        'Ethical approval received from the Internal Ethics Committee, Symbiosis International (Deemed University)<br/><br /></p></div>'\
+        + instructions
         #display the header text and the instructions
-        return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome (' + session['group_id'] + ') ' + cursor['pid'] + '!</b></font></div>' \
-        + str + '<br><br><center><input type=button value = "Begin Task" size = 20 onClick = "location.assign(\'http://localhost:5000/sentence\')")></center>'))
+        return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome (' + session['group_id'] + ') ' + cursor['pid'] + '!</b></font></div>' + str1 + '<br><br><div class="d-block" style="text-align:center;"><button class="btn btn-outline-success btn-sm" type="button" onClick = "location.assign(\'http://localhost:5000/sentence\')">Begin Task</button></div>'\
+    '</div>'))
     #display an error message if the participant ID does not exist
-    return render_template('landing.html', text = Markup('<center><h3>Invalid ID!</h3><br>' + '<input type=button value = "Go Back" size = 20 onClick = "history.go(-1)"></center>'))
+    return render_template('landing.html', text = Markup('<center><h3 style="margin-top:20px;">Invalid ID!</h3><br>' + '<div class="d-block" style="text-align:center;"><button class="btn btn-outline-danger btn-sm" value="Go Back" type="button" onClick = "history.go(-1)">Go Back</button></div></center>'))
 
 @app.route('/sentence', methods=['GET', 'POST'])
 
@@ -198,6 +207,18 @@ def words():
             return render_template('words.html', pid=session['pid'], words = [synonyms])
         i += 1
     return render_template('words.html', pid=session['pid'], words={'words':[]})
+
+@app.route('/store_ranks', methods=['POST', 'GET'])
+
+def store_ranks():
+    """ Store the words and their corresponding ranks
+    """
+    #retrieve the JSON object passed in the request
+    jsdata = request.get_json()
+    #store the words - pid, sentence_no, list of words
+    store_word_ranks(session['pid'], jsdata['words'], session['sentence_no'])
+    print("hi please")
+    return json.dumps('Success')
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
