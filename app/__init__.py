@@ -216,7 +216,7 @@ def store_ranks():
     #retrieve the JSON object passed in the request
     jsdata = request.get_json()
     #store the words - pid, sentence_no, list of words
-    store_word_ranks(session['pid'], jsdata['words'], session['sentence_no'])
+    print(store_word_ranks(session['pid'], jsdata['words']))
     print("hi please")
     return json.dumps('Success')
 

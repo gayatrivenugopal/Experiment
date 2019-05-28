@@ -263,20 +263,22 @@ def get_synonyms(word):
     except Exception as e:
         print(e)
         return None
+
 def store_word_ranks(pid, words):
     """ Store the words and their corresponding ranks selected by the participant.
 
     Keyword Arguments:
         pid (str): the participant ID
-        words (dict): the words selected by the participant along with the ranks
+        words (list): the words selected by the participant along with the ranks
 
     Returns:
         (dict): the status which is 1, if successful and -1, if unsuccessful and also returns the
         description of the error.
     """
     try:
-        for key, value in words.items():
-            database.RankedWords.insert_one({'pid': pid, 'word': key, 'complexity': value})
+        for wordpair in words:
+            for key,value in wordpair.items():
+                database.RankedWords.insert_one({'pid': pid, 'word': key, 'complexity': value})
         return {'status': 1, 'data': None}
     except Exception as e:
         return {'status': -1, 'data': str(e)}
