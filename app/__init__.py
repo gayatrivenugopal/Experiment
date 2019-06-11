@@ -114,6 +114,7 @@ def store_tokens():
     #retrieve the JSON object passed in the request
     jsdata = request.get_json()
     #store the words - pid, sentence_no, list of words
+    print(jsdata['words'])
     store_words(session['pid'], jsdata['words'], session['sentence_no'])
 
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
@@ -201,6 +202,9 @@ def words():
                 #get the root and retrieve its synonyms
                 root = get_root(words_dict['data'][session['word_sentence_no']][i])
                 synonyms = get_synonyms(root)
+                if synonyms == None:
+                    i += 1
+                    continue
             synonyms.add(words_dict['data'][session['word_sentence_no']][i])
             if len(synonyms) == 0:
                 words() #TODO: test if this works
