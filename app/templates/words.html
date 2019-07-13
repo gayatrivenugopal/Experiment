@@ -4,18 +4,20 @@
   <title>Complex Word Identification in Hindi Sentences</title>
   <link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Montserrat" rel="stylesheet">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap.min.css') }}">
   <script src="{{ url_for('static',filename='jquery.js') }}"> </script>
-  <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="{{ url_for('static',filename='js/bootstrap.bundle.min.js') }}"></script>
   <script>
   wordArr1=""
     $(document).ready(function(){
+      $(".btn .btn-outline").hover(function(){$(this).css("background-color","yellow")},function(){$(this).css("background-color","white")});
       wordArr=$("#word").html().replace(/(^{)|(}$)/g, "").split(",");
       wordArr1=wordArr;
       $("#word").html("");
       str_words="";
       for (i=0;i<wordArr.length;i++){
-        str_words+="<div class='row'><div class='col-md-6 d-flex justify-content-center align-items-center'><h3 id='word_final'>"+wordArr[i]+"</h3></div><div class='row'><div class='form-group col-md-6'><div class='col-md-6 input-group rank"+i+"'><div class='btn-group' role='group' ><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='1'>1</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='2'>2</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='3'>3</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='4'>4</button></div><div class='btn-group' role='group'><button type='button' class='btn btn-outline-primary' value='5'>5</button></div></div></div></div></div></div><br />";
+        str_words+="<div class='row'><div class='col-md-6 d-flex justify-content-center align-items-center'><h3 id='word_final'>"+wordArr[i].trim().replace(/(^')|('$)/g, "")+"</h3></div><div class='row'><div class='form-group col-md-6'><div class='col-md-6 input-group rank"+i+"'>";
+        str_words+="<div class='btn-group' role='group' ><div class='btn-group' role='group'><button type='button' class='btn btn-outline-secondary' value='1' style='border:none'><i class='fas fa-laugh-beam' style='color:#d2b48c;font-size:40;'></i></button></div><div class='btn-group' role='group'><button style='border:none' type='button' class='btn btn-outline-secondary' value='2'><i class='fas fa-smile-beam' style='color:#d2b48c;font-size:40px;'></i></button></div><div class='btn-group' role='group'><button type='button' style='border:none' class='btn btn-outline-secondary' value='3'><i class='fas fa-frown-open' style='color:#d2b48c;font-size:40px;'></i></button></div><div class='btn-group' role='group'><button type='button' style='border:none' class='btn btn-outline-secondary' value='4'><i class='fas fa-tired' style='color:#d2b48c;font-size:40px;'></i></button></div><div class='btn-group' role='group'><button type='button' style='border:none' class='btn btn-outline-secondary' value='5'><i class='fas fa-dizzy' style='color:#d2b48c;font-size:40px;'></i></button></div></div></div></div></div></div><br />"
       }
       $("#start").html(str_words);
 
@@ -32,6 +34,13 @@
                 $('.'+divid+' button').removeClass("active");
                 $(this).attr("aria-pressed","true");
                 $(this).addClass("active");
+                // $(".active i").css("color","white");
+                // $('.'+divid+' .active i').css("color","grey");
+                // if ($(this).attr("aria-pressed")){
+                //   $(this.ch > 'i').css("color","white");
+                // }
+
+
              });
         }
 
@@ -42,7 +51,6 @@ wordRankArr=new Array();
         for (i in a){
             rank.push($(a[i]+' button.active').val());
           }
-          alert(rank);
           // wordRankArr=new Array();
           for (i=0;i<wordArr1.length;i++){
             var temp={};
@@ -58,14 +66,19 @@ wordRankArr=new Array();
 
     }
 
-    // wordRankArr=new Array();
-    // for (i=0;i<wordArr1.length;i++){
-    //   var temp={};
-    //   temp[wordArr[i]]=rank[i];
-    //   wordRankArr.push(temp);
-    // }
-  </script>
 
+  </script>
+<script>
+  // $(document).ready(function(){
+  //   $("i").hover(
+  //     function(){$(this).css("color","white")},
+  //     function(){$(this).css("color","grey")}
+  //   );
+  //   // $("i").click(
+  //   //   function(){$(this).css("color","white");}
+  //   // );
+  // });
+</script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css" rel="stylesheet" type="text/css">
   <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
@@ -105,7 +118,6 @@ wordRankArr=new Array();
   </div>
 <script>
 function store_ranks() {
-  alert("hi"+wordRankArr);
     var data={'words': wordRankArr};
     console.log(data);
     $.ajax({
@@ -135,6 +147,7 @@ function final_check(){
 }
 </script>
 
+<footer style="padding:25px;"></footer>
 
 </body>
 

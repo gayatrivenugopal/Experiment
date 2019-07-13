@@ -77,7 +77,7 @@ def login():
         'Ethical approval received from the Internal Ethics Committee, Symbiosis International (Deemed University)<br/><br /></p></div>'\
         + instructions
         #display the header text and the instructions
-        return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome (' + session['group_id'] + ') ' + cursor['pid'] + '!</b></font></div>' + str1 + '<br><br><div class="d-block" style="text-align:center;"><button class="btn btn-outline-success btn-sm" type="button" onClick = "location.assign(\'http://localhost:5000/sentence\')">Begin Task</button></div>'\
+        return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome<font color="white">' + session['group_id'] + '</font>' + cursor['pid'] + '!</b></font></div>' + str1 + '<br><br><div class="d-block" style="text-align:center;"><button class="btn btn-outline-success btn-sm" type="button" onClick = "location.assign(\'http://localhost:5000/sentence\')">Begin Task</button></div>'\
     '</div>'))
     #display an error message if the participant ID does not exist
     return render_template('landing.html', text = Markup('<center><h3 style="margin-top:20px;">Invalid ID!</h3><br>' + '<div class="d-block" style="text-align:center;"><button class="btn btn-outline-danger btn-sm" value="Go Back" type="button" onClick = "history.go(-1)">Go Back</button></div></center>'))
@@ -114,6 +114,7 @@ def store_tokens():
     #retrieve the JSON object passed in the request
     jsdata = request.get_json()
     #store the words - pid, sentence_no, list of words
+    print(jsdata['words'])
     store_words(session['pid'], jsdata['words'], session['sentence_no'])
 
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
@@ -201,6 +202,9 @@ def words():
                 #get the root and retrieve its synonyms
                 root = get_root(words_dict['data'][session['word_sentence_no']][i])
                 synonyms = get_synonyms(root)
+                if synonyms == None:
+                    i += 1
+                    continue
             synonyms.add(words_dict['data'][session['word_sentence_no']][i])
             if len(synonyms) == 0:
                 words() #TODO: test if this works
@@ -216,7 +220,7 @@ def store_ranks():
     #retrieve the JSON object passed in the request
     jsdata = request.get_json()
     #store the words - pid, sentence_no, list of words
-    store_word_ranks(session['pid'], jsdata['words'], session['sentence_no'])
+    print(store_word_ranks(session['pid'], jsdata['words']))
     print("hi please")
     return json.dumps('Success')
 
