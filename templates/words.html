@@ -34,13 +34,6 @@
                 $('.'+divid+' button').removeClass("active");
                 $(this).attr("aria-pressed","true");
                 $(this).addClass("active");
-                // $(".active i").css("color","white");
-                // $('.'+divid+' .active i').css("color","grey");
-                // if ($(this).attr("aria-pressed")){
-                //   $(this.ch > 'i').css("color","white");
-                // }
-
-
              });
         }
 
@@ -68,17 +61,6 @@ wordRankArr=new Array();
 
 
   </script>
-<script>
-  // $(document).ready(function(){
-  //   $("i").hover(
-  //     function(){$(this).css("color","white")},
-  //     function(){$(this).css("color","grey")}
-  //   );
-  //   // $("i").click(
-  //   //   function(){$(this).css("color","white");}
-  //   // );
-  // });
-</script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.8.0/css/bootstrap-slider.min.css" rel="stylesheet" type="text/css">
   <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
@@ -128,7 +110,6 @@ function store_ranks() {
         contentType:"application/json; charset=UTF-8",
         success: function(response) {
             console.log(response);
-            // $("#frm").submit();
         },
         error: function(error) {
             console.log(error);
@@ -147,8 +128,8 @@ function final_check(){
 }
 </script>
 
-<footer style="padding:25px;"></footer>
+<footer style="padding:25px">
+</footer>
 
 </body>
-
 </html>
