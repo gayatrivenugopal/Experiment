@@ -31,7 +31,7 @@ app = Flask(__name__)
 if __name__ == '__main__':
     #for session creation
     app.secret_key = "123"
-    app.run()
+    app.run(host='0.0.0.0')
     session['group_id'] = None
     session['pid'] = None
     session['sentences'] = None
