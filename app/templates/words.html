@@ -102,6 +102,11 @@ wordRankArr=new Array();
           <h4 class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;color:white;">Participant Id : {{pid}}</h4>
         </div>
         <h3>{% for word in words %}
+              {%if word=="Select any option to proceed" %}
+              <script>
+              location.href="http://localhost:5000/words"
+              </script>
+              {% endif %}
           <p style="font-size:20px;" id="word">{{word}}</p>
           {% endfor %}
         </h3>

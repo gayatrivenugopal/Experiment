@@ -39,7 +39,6 @@ if __name__ == '__main__':
     session['word_sentence_no'] = 0
     session['sentences_complete'] = 0
     session['flag'] = 0 #for indicating whether we are on a new sentence in the word ranking task
-
 app.secret_key = "123"
 
 @app.route('/')
