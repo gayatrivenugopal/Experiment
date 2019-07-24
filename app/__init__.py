@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 
 from flask import Flask
@@ -38,7 +39,8 @@ if __name__ == '__main__':
     session['sentence_no'] = 0
     session['word_sentence_no'] = 0
     session['sentences_complete'] = 0
-    session['flag'] = 0 #for indicating whether we are on a new sentence in the word ranking task
+    #for indicating whether we are on a new sentence in the word ranking task
+
 app.secret_key = "123"
 
 @app.route('/')
@@ -76,8 +78,15 @@ def login():
         'Project funded by Symbiosis Centre for Research and Innovation, Symbiosis International (Deemed University)<br /><br />'\
         'Ethical approval received from the Internal Ethics Committee, Symbiosis International (Deemed University)<br/><br /></p></div>'\
         + instructions
+        open(session['pid']+'session.txt','w').write('0')
+        open(session['pid']+'flag.txt','w').write('0')
+        open(session['pid']+'sentences.txt','w').write('')
+        open(session['pid']+'sentence_no.txt','w').write('0')
+        open(session['pid']+'word_sentence_no.txt','w').write('0')
+        open(session['pid']+'sentences_complete.txt','w').write('0')
+        
         #display the header text and the instructions
-        return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome<font color="white">' + session['group_id'] + '</font>' + cursor['pid'] + '!</b></font></div>' + str1 + '<br><br><div class="d-block" style="text-align:center;"><button class="btn btn-outline-success btn-sm" type="button" onClick = "location.assign(\'http://localhost:5000/sentence\')">Begin Task</button></div>'\
+        return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome<font color="white">' + session['group_id'] + '</font>' + cursor['pid'] + '!</b></font></div>' + str1 + '<br><br><div class="d-block" style="text-align:center;"><button class="btn btn-outline-success btn-sm" type="button" onClick = "location.assign(\'http://107.191.96.150:5000/sentence\')">Begin Task</button></div>'\
     '</div>'))
     #display an error message if the participant ID does not exist
     return render_template('landing.html', text = Markup('<center><h3 style="margin-top:20px;">Invalid ID!</h3><br>' + '<div class="d-block" style="text-align:center;"><button class="btn btn-outline-danger btn-sm" value="Go Back" type="button" onClick = "history.go(-1)">Go Back</button></div></center>'))
@@ -87,33 +96,43 @@ def login():
 def sentence():
     """ Display the current sentence.
     """
+    print("REQUEST: ", request.referrer)#, ' session stored words: ', session['stored_words'])
     #check if we came to the page after the login page
     #if request.referrer.find('login'):
     #check if state exists in the database. If so, update the session variables. Take care of sentences_complete.
     state_info = sentence_state_exists(session['pid'])
     if state_info['state'] == 1:
-        session['sentence_no'] = state_info['data']['sentence_number']  #this will be incremented subsequently
+        #session['sentence_no'] = state_info['data']['sentence_number']  #this will be incremented subsequently
+        open(session['pid']+'sentence_no.txt','w').write(str(state_info['data']['sentence_number']))  #this will be incremented subsequently
         print('referrer: ', request.referrer)
-#        if request.referrer.find('login') != -1:
+        if request.referrer.find('login') != -1 or open(session['pid']+'session.txt', 'r').read().strip() == '1':
 #            #subtract one from the sentence number to view the last sentence again
-#            session['sentence_no'] = session['sentence_no'] - 1
-#            print('subtracted sentence no to ', session['sentence_no'])
-        session['sentence_no'] = session['sentence_no'] - 1
-        print('subtracted sentence no to ', session['sentence_no'])
+            #session['sentence_no'] = session['sentence_no'] - 1
+            print('Literal: ',str(int(open(session['pid']+'sentence_no.txt','r').read().strip())-1))
+            if int(open(session['pid']+'sentence_no.txt','r').read().strip()) != 0:
+                open(session['pid']+'sentence_no.txt','w').write(str(int(open(session['pid']+'sentence_no.txt','r').read().strip())-1))
+                print('subtracted sentence no to ')#, session['sentence_no'])
+    
         if state_info['data']['sentences_complete'] != None:
-            session['sentences_complete'] = state_info['data']['sentences_complete']
+            #session['sentences_complete'] = state_info['data']['sentences_complete']
+            open(session['pid']+'sentences_complete.txt','w').write(str(state_info['data']['sentences_complete']))
 
+    print('setting stored words to 0')
+    open(session['pid']+'session.txt','w').write('0')
 
     #retrieve all the sentences allotted the group
     sentences = get_sentences(session['group_id'])
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
     update_sentence_number()
 
-    if 'sentences_complete' in session and session['sentences_complete'] == 1:
+    #if 'sentences_complete' in session and session['sentences_complete'] == 1:
+    #if session['sentences_complete'] == 1:
+    if open(session['pid']+'sentences_complete.txt','r').read().strip() == '1':
         #display the words task
         return render_template('begin_words_task.html', pid = session['pid'])
     #display the current sentence
-    return render_template('sentences.html', sentence = sentences[session['sentence_no']], sentence_number = session['sentence_no']+1, pid = session['pid'])
+    #return render_template('sentences.html', sentence = sentences[session['sentence_no']], sentence_number = session['sentence_no']+1, pid = session['pid'])
+    return render_template('sentences.html', sentence = sentences[int(open(session['pid']+'sentence_no.txt','r').read().strip())], sentence_number = int(open(session['pid']+'sentence_no.txt','r').read().strip())+1, pid = session['pid'])
 
 @app.route('/store_tokens', methods=['POST', 'GET'])
 
@@ -124,7 +143,12 @@ def store_tokens():
     jsdata = request.get_json()
     #store the words - pid, sentence_no, list of words
     print(jsdata['words'])
-    store_words(session['pid'], jsdata['words'], session['sentence_no'])
+    file = open(session['pid']+'session.txt', 'w')
+    file.write('1')
+    #print('stored words in store tokens: ', session['stored_words'])
+    #store_words(session['pid'], jsdata['words'], session['sentence_no'])
+    print('sentence ', int(open(session['pid']+'sentence_no.txt','r').read().strip()))
+    store_words(session['pid'], jsdata['words'], int(open(session['pid']+'sentence_no.txt','r').read().strip()))
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
     update_sentence_number()
     #############################
@@ -139,32 +163,43 @@ def store_tokens():
 
 
 
-    if 'sentences_complete' in session and session['sentences_complete'] == 1:
+    #if 'sentences_complete' in session and session['sentences_complete'] == 1:
+    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) == 1:
         #return the flag
         return json.dumps({'sentence_flag': 0});
     #retrieve all the sentences allotted to the group
     sentences = get_sentences(session['group_id'])
     #return the flag, the current sentence, the sentence number and the participant ID
-    return json.dumps({'sentence_flag':1, 'sentence': sentences[session['sentence_no']], 'sentence_number': session['sentence_no']+1, 'pid': session['pid']});
+    #return json.dumps({'sentence_flag':1, 'sentence': sentences[session['sentence_no']], 'sentence_number': session['sentence_no']+1, 'pid': session['pid']});
+    return json.dumps({'sentence_flag':1, 'sentence': sentences[int(open(session['pid']+'sentence_no.txt','r').read().strip())], 'sentence_number': int(open(session['pid']+'sentence_no.txt','r').read().strip())+1, 'pid': session['pid']})
 
 def update_sentence_number():
     """ Update the current sentence number.
     """
     #initialize sentence_no in the session
-    if 'sentence_no' not in session and 'sentences_complete' not in session:
-        session['sentence_no'] = 0
+    #if 'sentence_no' not in session and 'sentences_complete' not in session:
+    #        session['sentence_no'] = 0
+	
     #otherwise, increment the sentence_no if it is present in the session
-    elif 'sentences_complete' not in session:
-        session['sentence_no'] += 1
+    sentences_complete = 0
+    #elif 'sentences_complete' not in session:
+    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) == 0 and int(open(session['pid']+'sentence_no.txt','r').read().strip())!=0:
+        #session['sentence_no'] += 1
+        open(session['pid']+'sentence_no.txt','w').write(str(int(open(session['pid']+'sentence_no.txt','r').read().strip())+1))
     #set the flag in the session if the sentence_no exceeds 99 (beginning from 0)
-    if session['sentence_no'] > 99:
-        session['sentences_complete'] = 1
+    #if session['sentence_no'] > 99:
+    if int(open(session['pid']+'sentence_no.txt','r').read().strip()) > 99:
+        #session['sentences_complete'] = 1
+        open(session['pid']+'sentences_complete.txt','w').write('1')
     #store the participant ID, the sentence number and the sentences_complete flag in the database
-    if 'sentences_complete' not in session:
-        sentences_complete = None
-    else:
-        sentences_complete = session['sentences_complete']
-    status = store_sentence_state(session['pid'], session['sentence_no'], sentences_complete)
+    #if 'sentences_complete' not in session:
+    #    sentences_complete = None
+    #else:
+    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) != 0:
+        #sentences_complete = session['sentences_complete']
+        sentences_complete = int(open(session['pid']+'sentences_complete.txt','r').read().strip())
+    #status = store_sentence_state(session['pid'], session['sentence_no'], sentences_complete)
+    status = store_sentence_state(session['pid'], int(open(session['pid']+'sentence_no.txt','r').read().strip()), sentences_complete)
 
 @app.route('/begin_words_task', methods=['GET', 'POST'])
 def begin_words_task():
@@ -180,14 +215,20 @@ def words():
     state = words_state_exists(session['pid'])
 
     if state['data'] is None:
-        session['word_sentence_no'] = 0
-        session['word_no'] = 0
-        session['word'] = None
-        session['flag'] = 1
+        #session['word_sentence_no'] = 0
+        open(session['pid']+'word_sentence_no.txt','w').write('0')
+        #session['word_no'] = 0
+        open(session['pid']+'word_no.txt','w').write('0')
+        #session['word'] = None
+        open(session['pid']+'word.txt','w').write('')
+        #session['flag'] = 1
+        open(session['pid']+'flag.txt', 'w').write('1')
         print("state is none setting flag to 1")
     else:
-        session['word_sentence_no'] = int(state['data']['sentence_number'])
-        session['word_no'] = state['data']['word_number']
+        #session['word_sentence_no'] = int(state['data']['sentence_number'])
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(state['data']['sentence_number'])))
+        #session['word_no'] = state['data']['word_number']
+        open(session['pid']+'word_no.txt','w').write(str(int(state['data']['word_number'])))
     #print('getting state session word no: ', session['word_no'])
     #retrieve the words from the database
     words_dict = get_words(session['pid'])
@@ -197,101 +238,140 @@ def words():
             sentence_words.append(value)
     else:
         return render_template('end.html')
+    
+    if len(sentence_words) == 0:
+        #session['word_sentence_no'] += 1
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(open(session['pid']+'word_sentence_no.txt','r').read().strip()) + 1))
+        open(session['pid']+'flag.txt','w').write('1')
+        print('setting flag to 1 outside')
+        #print("End of function, setting flag to 1")
+        #session['word_no'] = 0
+        #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+        status = store_word_state(session['pid'], int(open(session['pid']+'word_sentence_no.txt','r').read().strip()), int(open(session['pid']+'word_no.txt','r').read().strip()))
+        #if session['word_sentence_no'] >= len(sentence_words):
+        if int(open(session['pid']+'word_sentence_no.txt','r').read().strip()) >= len(sentence_words):
+            return render_template('end.html')
+        return render_template('words.html', pid=session['pid'], words={'Select any option to proceed':[]})
 
-
-    if session['flag'] == 1:
-        session['word_no'] = 0
-        session['flag'] = 0
+    if open(session['pid']+'flag.txt','r').read().strip() == 1:
+        #session['word_no'] = 0
+        open(session['pid']+'word_no.txt','w').write('0')
+        #session['flag'] = 0
+        open(session['pid']+'flag.txt','w').write('0')
     else:
-        session['word_no'] += 1
+        #session['word_no'] += 1
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(open(session['pid']+'word_sentence_no.txt','r').read().strip()) + 1))
     if request.referrer.find('words') != -1:
-        print("Flag", session['flag'])
+        #print("Flag", session['flag'])
 
             #print(session.keys())
-        print("Word no. ", session['word_no'], " length: ",len(sentence_words[session['word_sentence_no']]))
-        if session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
-            session['flag'] = 1
+        #print("Word no. ", session['word_no'], " length: ",len(sentence_words[session['word_sentence_no']]))
+        #if session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
+        if int(open(session['pid']+'word_no.txt','r').read().strip()) >= len(sentence_words[open(session['pid']+'word_sentence_no.txt','r').read().strip()]):
+            open(session['pid']+'flag.txt','w').write('1')
             print("Resetting flag to 1")
             print("Incrementing word ", request.referrer)
 
     elif request.referrer.find('words') == -1 and state['data'] is None:
+        #session['word_no'] = 0
         session['word_no'] = 0
-        session['word_sentence_no'] = 0
+        open(session['pid']+'word_no.txt','w').write('0')
+        #session['word_sentence_no'] = 0
+        open(session['pid']+'word_sentence_no.txt','w').write('0')
     elif request.referrer.find('words') == -1:
-        if session['flag'] == 1:
-            session['word_no'] = 0
-            session['flag'] = 0
+        if open(session['pid']+'flag.txt','r').read().strip() == '1':
+            #session['word_no'] = 0
+            open(session['pid']+'word_no.txt','w').write('0')
+            open(session['pid']+'flag.txt','w').write('0')
             print('setting flag to 0 HERE')
     #display the word and its synonyms']
     i = 0
+
     print(sentence_words)
-    #print("here")
-    #print(session['word_sentence_no'])
-    #print(sentence_words[session['word_sentence_no']])
-    #print("there")
-    #print("session flag: ", session['flag'])
-    if 'word_no' in session and sentence_words[session['word_sentence_no']] != 0  and session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
+    print("here")
+   
+    #if 'word_no' in session and sentence_words[session['word_sentence_no']] != 0  and session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
+    if len(sentence_words[int(open(session['pid']+'word_sentence_no.txt','r').read().strip())]) != 0  and int(open(session['pid']+'word_no.txt','r').read().strip()) >= len(sentence_words[int(open(session['pid']+'word_sentence_no.txt','r').read().strip())]):
         #increment the word_sentence_no in the session
-        session['word_sentence_no'] += 1
-        session['word_no'] = 0
-        session['flag'] = 1
+        #session['word_sentence_no'] += 1
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(open(session['pid']+'word_sentence_no.txt','r').read().strip())+1))
+        #session['word_no'] = 0
+        open(session['pid']+'word_no.txt','w').write('0')
+        open(session['pid']+'flag.txt','w').write('1')
         print('setting word no to 0 and flag to 1')
         #######################
-        status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+        #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+        status = store_word_state(session['pid'], int(open(session['pid']+'word_sentence_no.txt','r').read().strip()),int(open(session['pid']+'word_no.txt','r').read().strip()))
         #######################
-    elif sentence_words[session['word_sentence_no']] == 0 and session['word_sentence_no']<len(sentence_words[session['word_sentence_no']]):
-        while len(sentence_words[session['word_sentence_no']])==0 :
-            session['word_sentence_no'] += 1
-            session['word_no'] = 0
-            session['flag'] = 1
+    #elif sentence_words[session['word_sentence_no']] == 0 and session['word_sentence_no']<len(sentence_words[session['word_sentence_no']]):
+    elif len(sentence_words[int(open(session['pid']+'word_sentence_no.txt','r').read().strip())]) == 0 and int(open(session['pid']+'word_sentence_no.txt','r').read().strip())<len(sentence_words[int(open(session['pid']+'word_sentence_no.txt','w').read().strip())]):
+        #while len(sentence_words[session['word_sentence_no']])==0 :
+        while len(sentence_words[int(open(session['pid']+'word_sentence_no.txt','r').read().strip())])==0 :
+            #session['word_sentence_no'] += 1
+            open(session['pid']+'word_sentence_no.txt','w').write(str(int(open(session['pid']+'word_sentence_no.txt','r').read().strip()) + 1))
+            #session['word_no'] = 0
+            open(session['pid']+'word_no.txt','w').write('0')
+            open(session['pid']+'flag.txt','w').write('1')
             print('setting flag to 1 here')
             #print("setting flag to 1 and proceeding")
-            status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-    if session['word_sentence_no'] >= len(sentence_words):
+            #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+            status = store_word_state(session['pid'], int(open(session['pid']+'word_sentence_no.txt','w').read().strip()), int(open(session['pid']+'word_no.txt','r').read().strip()))
+    #if session['word_sentence_no'] >= len(sentence_words):
+    if int(open(session['pid']+'word_sentence_no.txt','w').read().strip()) >= len(sentence_words):
         #TODO: display the final template and logout
         return render_template('end.html')
-    for words in sentence_words[session['word_sentence_no']]:
+    #for words in sentence_words[session['word_sentence_no']]:
+    for words in sentence_words[int(open(session['pid']+'word_sentence_no.txt','r').read().strip())]:
         #print("Words: ", words)
         #print("i: ", i)
         #print("session word no: ", session['word_no'])
         if words.strip() is '':
             i += 1
             #print('continuing')
-            session['word_no'] += 1
+            #session['word_no'] += 1
+            open(session['pid']+'word_no.txt','w').write(str(int(open(session['pid']+'word_no.txt','r').read().strip()) + 1))
             continue
         #check if the script has reached the word to be displayed
-        if i == session['word_no']:
+        #if i == session['word_no']:
+        if i == int(open(session['pid']+'word_no.txt','r').read().strip()):
             #store this state in the words_state collection
-            status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-            session['word_no'] += 1
+            #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+            status = store_word_state(session['pid'], int(open(session['pid']+'word_sentence_no.txt','r').read().strip()), int(open(session['pid']+'word_no.txt','r').read().strip()))
+            #session['word_no'] += 1
+            open(session['pid']+'word_no.txt','w').write(str(int(open(session['pid']+'word_no.txt','r').read().strip()) + 1))
             #pass the set of the word and its synonyms to the template
             #retrieve the synonyms as a set
-            synonyms = get_synonyms(words_dict['data'][session['word_sentence_no']][i])
+            synonyms = get_synonyms(words)#words_dict['data'][session['word_sentence_no']][i])
             if synonyms == None:
                 #get the root and retrieve its synonyms
-                root = get_root(words_dict['data'][session['word_sentence_no']][i])
+                root = get_root(words)#_dict['data'][session['word_sentence_no']][i])
+                print(root)
                 synonyms = get_synonyms(root)
                 if synonyms == None:
                     i += 1
-                    #print("synonyms is none, continuing")
-                    session['word_no'] += 1
+                    print("synonyms is none, continuing")
+                    #session['word_no'] += 1
+                    open(session['pid']+'word_no.txt','w').write(str(int(open(session['pid']+'word_no.txt','r').read().strip()) + 1))
                     continue
-            synonyms.add(words_dict['data'][session['word_sentence_no']][i])
+            synonyms.add(words)#_dict['data'][session['word_sentence_no']][i])
             if len(synonyms) == 0:
                 i += 1
-                session['word_no'] += 1
+                #session['word_no'] += 1
+                open(session['pid']+'word_no.txt','w').write(str(int(open(session['pid']+'word_no.txt','r').read().strip()) + 1))
                 continue
                 #words_copy() #TODO: test if this works
             return render_template('words.html', pid=session['pid'], words = [synonyms])
         i += 1
         #words_copy()
     ##############
-    session['word_sentence_no'] += 1
-    session['flag'] = 1
+    #session['word_sentence_no'] += 1
+    open(session['pid']+'word_sentence_no.txt','w').write(str(int(open(session['pid']+'word_sentence_no.txt','r').read().strip()) + 1))
+    open(session['pid']+'flag.txt','w').write('1')
     print('setting flag to 1 outside')
     #print("End of function, setting flag to 1")
     #session['word_no'] = 0
-    status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+    #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
+    status = store_word_state(session['pid'], int(open(session['pid']+'word_sentence_no.txt','r').read().strip()), int(open(session['pid']+'word_no.txt','r').read().strip()))
     #words_copy()
     ###############
     return render_template('words.html', pid=session['pid'], words={'Select any option to proceed':[]})
@@ -353,15 +433,15 @@ def words_copy():
             status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
             #pass the set of the word and its synonyms to the template
             #retrieve the synonyms as a set
-            synonyms = get_synonyms(words_dict['data'][session['word_sentence_no']][i])
+            synonyms = get_synonyms(words)
             if synonyms == None:
                 #get the root and retrieve its synonyms
-                root = get_root(words_dict['data'][session['word_sentence_no']][i])
+                root = get_root(words)#words_dict['data'][session['word_sentence_no']][i])
                 synonyms = get_synonyms(root)
                 if synonyms == None:
                     i += 1
                     continue
-            synonyms.add(words_dict['data'][session['word_sentence_no']][i])
+            synonyms.add(words)#_dict['data'][session['word_sentence_no']][i])
             if len(synonyms) == 0:
                 i += 1
                 continue

@@ -1,7 +1,7 @@
-#!/usr/bin/python3
+
 from pymongo import MongoClient
 
-import stanfordnlp
+#import stanfordnlp
 
 
 #connect to the MongoDB instance
@@ -290,8 +290,23 @@ def get_root(word):
     Required argument:
 	word (str): the word whose root form is to be retrieved
     """
+    try:
+        query = {'word': word}
+        cursor = database['Words'].find(query)
+        
+        if cursor is None:
+            return None
+        for document in cursor:
+            if len(document['roots']) > 0:
+                return document['roots']
+    except Exception as e:
+        print(e)
+        return None
+
+    '''
     nlp = stanfordnlp.Pipeline(lang='hi')
     doc = nlp(word)
     for sentence in doc.sentences:
         for word in sentence.words:
             return word.lemma
+    '''

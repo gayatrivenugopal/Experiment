@@ -93,18 +93,18 @@ wordRankArr=new Array();
       <h1 class="text-center" style="font-family:&#39;Abril Fatface&#39;, cursive;margin-top:10px;font-size:30px;margin-bottom:0;border-bottom:1px solid grey;background-color:rgba(193,193,193,0.29);"><br />Complex Word Identification in Hindi
         Sentences<br /><br /></h1>
     </div>
-    <form name='frm' action='http://localhost:5000/logout' method='POST'>
+    <form name='frm' action='http://107.191.96.150:5000/logout' method='POST'>
       <div class="d-block container"><button class="btn btn-outline-danger btn-sm" value="Logout" type="submit">Logout</button></div>
     </form>
     <center>
-      <form name='frm' method='POST' id="frm" action="http://localhost:5000/words" onsubmit="return final_check()">
+      <form name='frm' method='POST' id="frm" action="http://107.191.96.150:5000/words" onsubmit="return final_check()">
         <div style="margin-top:36px;">
           <h4 class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;color:white;">Participant Id : {{pid}}</h4>
         </div>
         <h3>{% for word in words %}
               {%if word=="Select any option to proceed" %}
               <script>
-              location.href="http://localhost:5000/words"
+              location.href="http://107.191.96.150:5000/words"
               </script>
               {% endif %}
           <p style="font-size:20px;" id="word">{{word}}</p>
