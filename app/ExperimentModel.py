@@ -207,7 +207,7 @@ def store_words(pid, words, sentence_number):
     """
     try:
         database.ComplexWords.insert_one({'pid': pid, 'words': words, 'sentence_number': sentence_number})
-        print("Stored words from model")
+        print("Stored words using model")
         return {'status': 1, 'data': None}
     except Exception as e:
         return {'status': -1, 'data': str(e)}

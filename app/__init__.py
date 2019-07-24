@@ -96,9 +96,8 @@ def login():
 def sentence():
     """ Display the current sentence.
     """
-    print("REQUEST: ", request.referrer)#, ' session stored words: ', session['stored_words'])
+    print("inside sentence")
     #check if we came to the page after the login page
-    #if request.referrer.find('login'):
     #check if state exists in the database. If so, update the session variables. Take care of sentences_complete.
     state_info = sentence_state_exists(session['pid'])
     if state_info['state'] == 1:
@@ -106,16 +105,25 @@ def sentence():
         open(session['pid']+'sentence_no.txt','w').write(str(state_info['data']['sentence_number']))  #this will be incremented subsequently
         print('referrer: ', request.referrer)
         if request.referrer.find('login') != -1 or open(session['pid']+'session.txt', 'r').read().strip() == '1':
-#            #subtract one from the sentence number to view the last sentence again
+            #subtract one from the sentence number to view the last sentence again
             #session['sentence_no'] = session['sentence_no'] - 1
-            print('Literal: ',str(int(open(session['pid']+'sentence_no.txt','r').read().strip())-1))
+            print('login or session.txt is 1')
+            temp = int(open(session['pid']+'sentence_no.txt','r').read().strip())
+            open(session['pid']+'sentence_no.txt','w').write(str(temp-1))
             if int(open(session['pid']+'sentence_no.txt','r').read().strip()) != 0:
-                open(session['pid']+'sentence_no.txt','w').write(str(int(open(session['pid']+'sentence_no.txt','r').read().strip())-1))
+                temp = int(open(session['pid']+'sentence_no.txt','r').read().strip())
+                open(session['pid']+'sentence_no.txt','w').write(str(temp-1))
                 print('subtracted sentence no to ')#, session['sentence_no'])
-    
+   
+        
         if state_info['data']['sentences_complete'] != None:
             #session['sentences_complete'] = state_info['data']['sentences_complete']
             open(session['pid']+'sentences_complete.txt','w').write(str(state_info['data']['sentences_complete']))
+    elif request.referrer.find('login') != -1 or open(session['pid']+'session.txt', 'r').read().strip() == '1':
+        print("NO STATE REDUCING SENTENCE NO")
+        temp = int(open(session['pid']+'sentence_no.txt','r').read().strip())
+       	open(session['pid']+'sentence_no.txt','w').write(str(temp-1))
+        print("sentence no: ", temp-1)
 
     print('setting stored words to 0')
     open(session['pid']+'session.txt','w').write('0')
@@ -123,6 +131,7 @@ def sentence():
     #retrieve all the sentences allotted the group
     sentences = get_sentences(session['group_id'])
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
+   
     update_sentence_number()
 
     #if 'sentences_complete' in session and session['sentences_complete'] == 1:
@@ -134,34 +143,26 @@ def sentence():
     #return render_template('sentences.html', sentence = sentences[session['sentence_no']], sentence_number = session['sentence_no']+1, pid = session['pid'])
     return render_template('sentences.html', sentence = sentences[int(open(session['pid']+'sentence_no.txt','r').read().strip())], sentence_number = int(open(session['pid']+'sentence_no.txt','r').read().strip())+1, pid = session['pid'])
 
-@app.route('/store_tokens', methods=['POST', 'GET'])
+@app.route('/store_tokens', methods=['POST'])
 
 def store_tokens():
     """ Store the words selected by the user and display the next sentence.
     """
+    print('inside store_tokens')
     #retrieve the JSON object passed in the request
     jsdata = request.get_json()
     #store the words - pid, sentence_no, list of words
-    print(jsdata['words'])
-    file = open(session['pid']+'session.txt', 'w')
-    file.write('1')
+    if len(jsdata['words']) != 0:
+        file = open(session['pid']+'session.txt', 'w')
+        file.write('1')
     #print('stored words in store tokens: ', session['stored_words'])
     #store_words(session['pid'], jsdata['words'], session['sentence_no'])
-    print('sentence ', int(open(session['pid']+'sentence_no.txt','r').read().strip()))
-    store_words(session['pid'], jsdata['words'], int(open(session['pid']+'sentence_no.txt','r').read().strip()))
+    store_words(session['pid'], jsdata['words'], open(session['pid']+'sentence_no.txt','r').read())
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
-    update_sentence_number()
-    #############################
-    #state_info = sentence_state_exists(session['pid'])
-    #if state_info['state'] == 1:
-    #        session['sentence_no'] = state_info['data']['sentence_number'] #this will be incremented subsequently
-    #        print('sentence_no after updating and storing: ',session['sentence_no'])
-    #if state_info['data']['sentences_complete'] != None:
-    #        session['sentences_complete'] = state_info['data']['sentences_complete']
-    ############################
+    
 
 
-
+#    update_sentence_number()
 
     #if 'sentences_complete' in session and session['sentences_complete'] == 1:
     if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) == 1:
@@ -183,23 +184,23 @@ def update_sentence_number():
     #otherwise, increment the sentence_no if it is present in the session
     sentences_complete = 0
     #elif 'sentences_complete' not in session:
-    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) == 0 and int(open(session['pid']+'sentence_no.txt','r').read().strip())!=0:
+    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) == 0:# and int(open(session['pid']+'sentence_no.txt','r').read().strip())!=0:
         #session['sentence_no'] += 1
-        open(session['pid']+'sentence_no.txt','w').write(str(int(open(session['pid']+'sentence_no.txt','r').read().strip())+1))
+        temp = open(session['pid']+'sentence_no.txt','r').read()
+        print("temp: ", temp)
+        open(session['pid']+'sentence_no.txt','w').write(str(int(temp)+1))
     #set the flag in the session if the sentence_no exceeds 99 (beginning from 0)
     #if session['sentence_no'] > 99:
-    if int(open(session['pid']+'sentence_no.txt','r').read().strip()) > 99:
+    temp = open(session['pid']+'sentence_no.txt','r').read()
+    if int(temp) > 99:
         #session['sentences_complete'] = 1
         open(session['pid']+'sentences_complete.txt','w').write('1')
-    #store the participant ID, the sentence number and the sentences_complete flag in the database
-    #if 'sentences_complete' not in session:
-    #    sentences_complete = None
-    #else:
     if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) != 0:
         #sentences_complete = session['sentences_complete']
         sentences_complete = int(open(session['pid']+'sentences_complete.txt','r').read().strip())
+    print("sentence no after updation: ", open(session['pid']+'sentence_no.txt','r').read().strip())
     #status = store_sentence_state(session['pid'], session['sentence_no'], sentences_complete)
-    status = store_sentence_state(session['pid'], int(open(session['pid']+'sentence_no.txt','r').read().strip()), sentences_complete)
+    status = store_sentence_state(session['pid'], open(session['pid']+'sentence_no.txt','r').read(), sentences_complete)
 
 @app.route('/begin_words_task', methods=['GET', 'POST'])
 def begin_words_task():

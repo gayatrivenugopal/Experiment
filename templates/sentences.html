@@ -19,18 +19,18 @@
     <h1 class="text-center" style="font-family:&#39;Abril Fatface&#39;, cursive;margin-top:10px;font-size:30px;margin-bottom:0;border-bottom:1px solid grey;background-color:rgba(193,193,193,0.29);"><br />Complex Word Identification in Hindi
       Sentences<br /><br /></h1>
   </div>
-  <form name='frm' action='http://localhost:5000/logout' method='POST'>
+  <form name='frm' action='https://107.191.96.150:5000/logout' method='POST'>
     <div class="d-block container"><button class="btn btn-outline-danger btn-sm" value="Logout" type="submit">Logout</button></div>
   </form>
 
   <center>
-    <form name='frm' id='frm' method='POST'>
+    <form name='frm' id='frm' action='https://107.191.96.150:5000/sentence' method='POST'>
 
       <div style="margin-top:36px;">
         <h4 class="text-center" style="font-family:Montserrat, sans-serif;font-weight:bold;">Participant Id :{{pid}}</h4>
       </div>
       <center><div id='sentence' style="font-size:25px;">{{sentence}}</div></center><br><br>
-      <div class="d-block" style="text-align:center;"><button id="btn1" class="btn btn-outline-info btn-sm" type="submit" style="margin-top:20px;">Next</button></div>
+      <div class="d-block" style="text-align:center;"><button id="btn1" type='submit' class="btn btn-outline-info btn-sm" style="margin-top:20px;">Next</button></div>
       <div align=right><span id='number'>{{sentence_number}}</span></div>
     </form>
   </center>
@@ -45,7 +45,9 @@
       });
       });
 
-    $("#btn1").click(function() {
+//    $("#btn1").click(function() {
+       $('#frm').on('submit', function (e) {
+        e.preventDefault();
       $("span.clicked").each(function(){
         wordSelectedArr.push(this.textContent);
       });
@@ -61,12 +63,14 @@
         contentType: "application/json; charset=UTF-8",
         success: function(response) {
           console.log(response);
+          alert(response)
           if (response['sentence_flag'] == 0)
             $('#frm').submit();
           else {
-            $("#sentence").html(response['sentence']);
-            $("#pid").html(response['pid']);
-            $("#number").html(response['sentence_number']);
+              $('#frm').submit()
+           // $("#sentence").html(response['sentence']);
+            //$("#pid").html(response['pid']);
+            //$("#number").html(response['sentence_number']);
           }
         },
         error: function(error) {
