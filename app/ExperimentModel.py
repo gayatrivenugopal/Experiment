@@ -10,7 +10,6 @@ database = client.Experiment
 
 def validate_pid(pid):
     results = document_exists('Groups', 'pid', pid)
-    print(results['data'])
     if results['status'] == 1 and results['data'] != 0:
         return results['data']
 
@@ -188,7 +187,6 @@ def words_state_exists(pid):
         if cursor is None:
             return {'state': 1, 'data': None}
         else:
-            print(cursor, file=sys.stdout)
             return {'state': 1, 'data': cursor}
     except Exception as e:
         return {'state': -1, 'data': str(e)}
@@ -207,7 +205,6 @@ def store_words(pid, words, sentence_number):
     """
     try:
         database.ComplexWords.insert_one({'pid': pid, 'words': words, 'sentence_number': sentence_number})
-        print("Stored words using model")
         return {'status': 1, 'data': None}
     except Exception as e:
         return {'status': -1, 'data': str(e)}

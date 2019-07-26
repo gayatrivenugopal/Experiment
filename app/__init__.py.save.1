@@ -78,25 +78,13 @@ def login():
         'Project funded by Symbiosis Centre for Research and Innovation, Symbiosis International (Deemed University)<br /><br />'\
         'Ethical approval received from the Internal Ethics Committee, Symbiosis International (Deemed University)<br/><br /></p></div>'\
         + instructions
-        f = open(session['pid']+'session.txt','w')
-        f.write('0')
-        f.close()
-        f = open(session['pid']+'flag.txt','w')
-        f.write('0')
-        f.close()
-        f = open(session['pid']+'sentences.txt','w')
-        f.write('')
-        f.close()
-        f = open(session['pid']+'sentence_no.txt','w')
-        f.write('0')
-        f.close()
-        f = open(session['pid']+'word_sentence_no.txt','w')
-        f.write('0')
-        f.close()
-        f = open(session['pid']+'sentences_complete.txt','w')
-        f.write('0')
-        f.close()
-
+        open(session['pid']+'session.txt','w').write('0')
+        open(session['pid']+'flag.txt','w').write('0')
+        open(session['pid']+'sentences.txt','w').write('')
+        open(session['pid']+'sentence_no.txt','w').write('0')
+        open(session['pid']+'word_sentence_no.txt','w').write('0')
+        open(session['pid']+'sentences_complete.txt','w').write('0')
+        
         #display the header text and the instructions
         return render_template('landing.html', text = Markup('<div align=right><font color=green><b>Welcome<font color="white">' + session['group_id'] + '</font>' + cursor['pid'] + '!</b></font></div>' + str1 + '<br><br><div class="d-block" style="text-align:center;"><button class="btn btn-outline-success btn-sm" type="button" onClick = "location.assign(\'http://107.191.96.150:5000/sentence\')">Begin Task</button></div>'\
     '</div>'))
@@ -111,71 +99,42 @@ def sentence():
     #check if we came to the page after the login page
     #check if state exists in the database. If so, update the session variables. Take care of sentences_complete.
     state_info = sentence_state_exists(session['pid'])
-    tempf = open(session['pid']+'session.txt', 'r')
-    tempvalue = tempf.read()
-    tempf.close()
     if state_info['state'] == 1:
         #session['sentence_no'] = state_info['data']['sentence_number']  #this will be incremented subsequently
-        f = open(session['pid']+'sentence_no.txt','w')
-        f.write(str(state_info['data']['sentence_number']))
-        f.close()
+        open(session['pid']+'sentence_no.txt','w').write(str(state_info['data']['sentence_number']))  #this will be incremented subsequently
         if request.referrer.find('login') != -1:# or open(session['pid']+'session.txt', 'r').read().strip() == '1':
             #subtract one from the sentence number to view the last sentence again
             #session['sentence_no'] = session['sentence_no'] - 1
 #            temp = int(open(session['pid']+'sentence_no.txt','r').read().strip())
 #            open(session['pid']+'sentence_no.txt','w').write(str(temp-1))
-            f = open(session['pid']+'sentence_no.txt','r')
-            temp = f.read()
-            f.close()
-            if int(temp) != 0:
-                f = open(session['pid']+'sentence_no.txt','r')
-                temp = f.read()
-                f.close()
-                f = open(session['pid']+'sentence_no.txt','w')
-                f.write(str(int(temp)-1))
-                f.close()
-
-
+            if int(open(session['pid']+'sentence_no.txt','r').read().strip()) != 0:
+                temp = int(open(session['pid']+'sentence_no.txt','r').read().strip())
+                open(session['pid']+'sentence_no.txt','w').write(str(temp-1))
+   
+        
         if state_info['data']['sentences_complete'] != None:
             #session['sentences_complete'] = state_info['data']['sentences_complete']
-	        f = open(session['pid']+'sentences_complete.txt','w')
-	        f.write(str(state_info['data']['sentences_complete']))
-	        f.close()
-    elif request.referrer.find('login') != -1 or tempvalue == '1':
-        f = open(session['pid']+'sentence_no.txt','r')
-        temp = f.read()
-        f.close()
-        f = open(session['pid']+'sentence_no.txt','w')
-        f.write(str(int(temp)-1))
-        f.close()
+            open(session['pid']+'sentences_complete.txt','w').write(str(state_info['data']['sentences_complete']))
+    elif request.referrer.find('login') != -1 or open(session['pid']+'session.txt', 'r').read().strip() == '1':
+        temp = int(open(session['pid']+'sentence_no.txt','r').read().strip())
+       	open(session['pid']+'sentence_no.txt','w').write(str(temp-1))
 
-        f = open(session['pid']+'session.txt','w')
-        f.write('0')
-        f.close()
+    open(session['pid']+'session.txt','w').write('0')
 
     #retrieve all the sentences allotted the group
     sentences = get_sentences(session['group_id'])
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
-
+   
     update_sentence_number()
 
     #if 'sentences_complete' in session and session['sentences_complete'] == 1:
     #if session['sentences_complete'] == 1:
-    f = open(session['pid']+'sentences_complete.txt','r')
-    temp = f.read()
-    f.close()
-    if temp == '1':
+    if open(session['pid']+'sentences_complete.txt','r').read().strip() == '1':
         #display the words task
         return render_template('begin_words_task.html', pid = session['pid'])
     #display the current sentence
     #return render_template('sentences.html', sentence = sentences[session['sentence_no']], sentence_number = session['sentence_no']+1, pid = session['pid'])
-    f1 = open(session['pid']+'sentence_no.txt','r')
-    temp1 = f1.read()
-    f1.close()
-    f2 = open(session['pid']+'sentence_no.txt','r')
-    temp2 = f2.read()
-    f2.close()
-    return render_template('sentences.html', sentence = sentences[int(temp1)], sentence_number = int(temp2)+1, pid = session['pid'])
+    return render_template('sentences.html', sentence = sentences[int(open(session['pid']+'sentence_no.txt','r').read().strip())], sentence_number = int(open(session['pid']+'sentence_no.txt','r').read().strip())+1, pid = session['pid'])
 
 @app.route('/store_tokens', methods=['POST'])
 
@@ -186,38 +145,26 @@ def store_tokens():
     jsdata = request.get_json()
     #store the words - pid, sentence_no, list of words
     if len(jsdata['words']) != 0:
-        f = open(session['pid']+'session.txt', 'w')
-        f.write('1')
-        f.close()
+        file = open(session['pid']+'session.txt', 'w')
+        file.write('1')
     #store_words(session['pid'], jsdata['words'], session['sentence_no'])
-    f = open(session['pid']+'sentence_no.txt','r')
-    temp = f.read()
-    f.close()
-    store_words(session['pid'], jsdata['words'], temp)
+    store_words(session['pid'], jsdata['words'], open(session['pid']+'sentence_no.txt','r').read())
     #update the sentence number and set the sentences_complete flag in the session. 1 indicates that all the sentences have been displayed.
-
+    
 
 
 #    update_sentence_number()
 
     #if 'sentences_complete' in session and session['sentences_complete'] == 1:
-    f = open(session['pid']+'sentences_complete.txt','r')
-    temp = f.read()
-    f.close()
-    if int(temp) == 1:
+    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) == 1:
         #return the flag
         return json.dumps({'sentence_flag': 0});
     #retrieve all the sentences allotted to the group
     sentences = get_sentences(session['group_id'])
     #return the flag, the current sentence, the sentence number and the participant ID
     #return json.dumps({'sentence_flag':1, 'sentence': sentences[session['sentence_no']], 'sentence_number': session['sentence_no']+1, 'pid': session['pid']});
-    f = open(session['pid']+'sentence_no.txt','r')
-    temp = f.read()
-    f.close()
-    f = open(session['pid']+'sentence_no.txt','r')
-    temp2 = f.read()
-    f.close()
-    return json.dumps({'sentence_flag':1, 'sentence': sentences[int(temp)], 'sentence_number': int(temp2)+1, 'pid': session['pid']})
+    temp = open(session['pid']+'sentence_no.txt','r').read()
+    return json.dumps({'sentence_flag':1, 'sentence': sentences[int(temp)], 'sentence_number': int(open(session['pid']+'sentence_no.txt','r').read().strip())+1, 'pid': session['pid']})
 
 def update_sentence_number():
     """ Update the current sentence number.
@@ -225,46 +172,25 @@ def update_sentence_number():
     #initialize sentence_no in the session
     #if 'sentence_no' not in session and 'sentences_complete' not in session:
     #        session['sentence_no'] = 0
-
+	
     #otherwise, increment the sentence_no if it is present in the session
     sentences_complete = 0
     #elif 'sentences_complete' not in session:
-    f = open(session['pid']+'sentences_complete.txt','r')
-    temp = f.read()
-    f.close()
-    if int(temp) == 0:# and int(open(session['pid']+'sentence_no.txt','r').read().strip())!=0:
+    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) == 0:# and int(open(session['pid']+'sentence_no.txt','r').read().strip())!=0:
         #session['sentence_no'] += 1
-        f = open(session['pid']+'sentence_no.txt','r')
-        temp = f.read()
-        f.close()
-        f = open(session['pid']+'sentence_no.txt','w')
-        f.write(str(int(temp)+1))
-        f.close()
+        temp = open(session['pid']+'sentence_no.txt','r').read()
+        open(session['pid']+'sentence_no.txt','w').write(str(int(temp)+1))
     #set the flag in the session if the sentence_no exceeds 99 (beginning from 0)
     #if session['sentence_no'] > 99:
-    f = open(session['pid']+'sentence_no.txt','r')
-    temp = f.read()
-    f.close()
-
-    filetemp = open(session['pid']+'sentences_complete.txt','r')
-    tempvalue = filetemp.read()
-    filetemp.close()
+    temp = open(session['pid']+'sentence_no.txt','r').read()
     if int(temp) > 99:
-        f = open(session['pid'] + 'sentences_complete.txt', 'w')
-        f.write('1')
-        f.close()
         #session['sentences_complete'] = 1
-    if int(tempvalue) != 0:
+        open(session['pid']+'sentences_complete.txt','w').write('1')
+    if int(open(session['pid']+'sentences_complete.txt','r').read().strip()) != 0:
         #sentences_complete = session['sentences_complete']
-        f = open(session['pid']+'sentences_complete.txt','r')
-        temp = f.read()
-        f.close()
-        sentences_complete = int(temp)
+        sentences_complete = int(open(session['pid']+'sentences_complete.txt','r').read().strip())
     #status = store_sentence_state(session['pid'], session['sentence_no'], sentences_complete)
-    f = open(session['pid']+'sentence_no.txt','r')
-    temp = f.read()
-    f.close()
-    status = store_sentence_state(session['pid'], temp, sentences_complete)
+    status = store_sentence_state(session['pid'], open(session['pid']+'sentence_no.txt','r').read(), sentences_complete)
 
 @app.route('/begin_words_task', methods=['GET', 'POST'])
 def begin_words_task():
@@ -281,30 +207,18 @@ def words():
 
     if state['data'] is None:
         #session['word_sentence_no'] = 0
-        f = open(session['pid']+'word_sentence_no.txt','w')
-        f.write('0')
-        f.close()
+        open(session['pid']+'word_sentence_no.txt','w').write('0')
         #session['word_no'] = 0
-        f = open(session['pid']+'word_no.txt','w')
-        f.write('0')
-        f.close()
+        open(session['pid']+'word_no.txt','w').write('0')
         #session['word'] = None
-        f = open(session['pid']+'word.txt','w')
-        f.write('')
-        f.close()
+        open(session['pid']+'word.txt','w').write('')
         #session['flag'] = 1
-        f = open(session['pid']+'flag.txt', 'w')
-        f.write('1')
-        f.close()
+        open(session['pid']+'flag.txt', 'w').write('1')
     else:
         #session['word_sentence_no'] = int(state['data']['sentence_number'])
-        f = open(session['pid']+'word_sentence_no.txt','w')
-        f.write(str(int(state['data']['sentence_number'])))
-        f.close()
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(state['data']['sentence_number'])))
         #session['word_no'] = state['data']['word_number']
-        f = open(session['pid']+'word_no.txt','w')
-        f.write(str(int(state['data']['word_number'])))
-        f.close()
+        open(session['pid']+'word_no.txt','w').write(str(int(state['data']['word_number'])))
     #retrieve the words from the database
     words_dict = get_words(session['pid'])
     sentence_words = []
@@ -313,211 +227,114 @@ def words():
             sentence_words.append(value)
     else:
         return render_template('end.html')
-
+    
     if len(sentence_words) == 0:
         #session['word_sentence_no'] += 1
-        f = open(session['pid']+'word_sentence_no.txt','w')
-        f2 = open(session['pid']+'word_sentence_no.txt','r')
-        temp = f2.read()
-        f2.close()
-        f.write(str(int(temp) + 1))
-        f.close()
-        f = open(session['pid']+'flag.txt','w')
-        f.write('1')
-        f.close()
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(open(session['pid']+'word_sentence_no.txt','r').read().strip()) + 1))
+        open(session['pid']+'flag.txt','w').write('1')
         #session['word_no'] = 0
         #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-        f = open(session['pid']+'word_sentence_no.txt','r')
-        temp = f.read()
-        f.close()
-        f = open(session['pid']+'word_no.txt','r')
-        temp2 = f.read()
-        f.close()
-        status = store_word_state(session['pid'], int(temp), int(temp2))
+        status = store_word_state(session['pid'], int(open(session['pid']+'word_sentence_no.txt','r').read().strip()), int(open(session['pid']+'word_no.txt','r').read().strip()))
         #if session['word_sentence_no'] >= len(sentence_words):
-        f = open(session['pid']+'word_sentence_no.txt','r')
-        temp = f.read()
-        f.close()
-        if int(temp) >= len(sentence_words):
+        if int(open(session['pid']+'word_sentence_no.txt','r').read().strip()) >= len(sentence_words):
             return render_template('end.html')
         return render_template('words.html', pid=session['pid'], words={'Select any option to proceed':[]})
-    f = open(session['pid']+'flag.txt','r')
-    temp = f.read()
-    f.close()
-    if temp == 1:
+
+    if open(session['pid']+'flag.txt','r').read().strip() == 1:
         #session['word_no'] = 0
-        f = open(session['pid']+'word_no.txt','w')
-        f.write('0')
-        f.close()
+        open(session['pid']+'word_no.txt','w').write('0')
         #session['flag'] = 0
-        f = open(session['pid']+'flag.txt','w')
-        f.write('0')
-        f.close()
+        open(session['pid']+'flag.txt','w').write('0')
     else:
         #session['word_no'] += 1
-        f = open(session['pid']+'word_sentence_no.txt','r')
-        temp = f.read()
-        f.close()
-        f = open(session['pid']+'word_sentence_no.txt','w')
-        f.write(str(int(temp) + 1))
-        f.close()
+        temp = open(session['pid']+'word_sentence_no.txt','r').read()
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(temp) + 1))
     if request.referrer.find('words') != -1:
         #if session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
-        f = open(session['pid']+'word_sentence_no.txt','r')
-        temp = f.read()
-        f.close()
-        f = open(session['pid']+'word_no.txt','r')
-        temp2 = f.read()
-        f.close()
+        temp = open(session['pid']+'word_sentence_no.txt','r').read()
+        temp2 = open(session['pid']+'word_no.txt','r').read()
         print("temp: ",temp)
         print("sentence words: ", sentence_words)
         if int(temp2) >= len(sentence_words[int(temp)]):
-	        f = open(session['pid']+'flag.txt','w')
-	        f.write('1')
-	        f.close()
+            open(session['pid']+'flag.txt','w').write('1')
 
     elif request.referrer.find('words') == -1 and state['data'] is None:
         #session['word_no'] = 0
         session['word_no'] = 0
-        f = open(session['pid']+'word_no.txt','w')
-        f.write('0')
-        f.close()
+        open(session['pid']+'word_no.txt','w').write('0')
         #session['word_sentence_no'] = 0
-        f = open(session['pid']+'word_sentence_no.txt','w')
-        f.write('0')
-        f.close()
+        open(session['pid']+'word_sentence_no.txt','w').write('0')
     elif request.referrer.find('words') == -1:
-        f = open(session['pid']+'flag.txt','r')
-        temp = f.read()
-        f.close()
-        if temp == '1':
+        if open(session['pid']+'flag.txt','r').read().strip() == '1':
             #session['word_no'] = 0
-            f = open(session['pid']+'word_no.txt','w')
-            f.write('0')
-            f.close()
-            f = open(session['pid']+'flag.txt','w')
-            f.write('0')
-            f.close()
+            open(session['pid']+'word_no.txt','w').write('0')
+            open(session['pid']+'flag.txt','w').write('0')
 
     i = 0
 
-    f = open(session['pid']+'word_sentence_no.txt','r')
-    temp1 = f.read()
-    f.close()
-    f = open(session['pid']+'word_no.txt','r')
-    temp2 = f.read()
-    f.close()
-    f = open(session['pid']+'word_sentence_no.txt','r')
-    temp3 = f.read()
-    f.close()
-    f = open(session['pid']+'word_sentence_no.txt','r')
-    temp4 = f.read()
-    f.close()
+    temp1 = open(session['pid']+'word_sentence_no.txt','r').read()   
+    temp2 = open(session['pid']+'word_no.txt','r').read()
+    temp3 = open(session['pid']+'word_sentence_no.txt','r').read()
+    temp4 = open(session['pid']+'word_sentence_no.txt','r').read()
     print("sentence words: ", sentence_words)
     print("temp1 and temp3: ", temp1)
     #if 'word_no' in session and sentence_words[session['word_sentence_no']] != 0  and session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
     if len(sentence_words[int(temp1)]) != 0  and int(temp2) >= len(sentence_words[int(temp3)]):
         #increment the word_sentence_no in the session
         #session['word_sentence_no'] += 1
-        f = open(session['pid']+'word_sentence_no.txt','r')
-        temp = f.read()
-        f.close()
-        f = open(session['pid']+'word_sentence_no.txt','w')
-        f.write(str(int(temp)+1))
-        f.close()
+        temp = open(session['pid']+'word_sentence_no.txt','r').read()
+        open(session['pid']+'word_sentence_no.txt','w').write(str(int(temp)+1))
         #session['word_no'] = 0
-        f = open(session['pid']+'word_no.txt','w')
-        f.write('0')
-        f.close()
-        f = open(session['pid']+'flag.txt','w')
-        f.write('1')
-        f.close()
+        open(session['pid']+'word_no.txt','w').write('0')
+        open(session['pid']+'flag.txt','w').write('1')
         #######################
         #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-        f = open(session['pid']+'word_sentence_no.txt','r')
-        temp1 = f.read()
-        f.close()
-        f = open(session['pid']+'word_no.txt','r')
-        temp2 = f.read()
-        f.close()
+        temp1 = open(session['pid']+'word_sentence_no.txt','r').read()
+        temp2 = open(session['pid']+'word_no.txt','r').read()
         status = store_word_state(session['pid'], int(temp1),int(temp2))
         #######################
     #elif sentence_words[session['word_sentence_no']] == 0 and session['word_sentence_no']<len(sentence_words[session['word_sentence_no']]):
     elif len(sentence_words[int(temp4)]) == 0 and int(temp4)<len(sentence_words[int(temp4)]):
         #while len(sentence_words[session['word_sentence_no']])==0 :
-        f = open(session['pid']+'word_sentence_no.txt','r')
-        t = f.read()
-        f.close()
-        while len(sentence_words[int(t)])==0:
-
+        while len(sentence_words[int(open(session['pid']+'word_sentence_no.txt','r').read().strip())])==0 :
+            print("kya hum yaha hain?")
             #session['word_sentence_no'] += 1
-            f = open(session['pid']+'word_sentence_no.txt','r')
-            temp = f.read()
-            f.close()
-            f = open(session['pid']+'word_sentence_no.txt','w')
-            f.write(str(int(temp) + 1))
-            f.close()
+            temp = open(session['pid']+'word_sentence_no.txt','r').read()
+            open(session['pid']+'word_sentence_no.txt','w').write(str(int(temp) + 1))
             #session['word_no'] = 0
-            f = open(session['pid']+'word_no.txt','w')
-            f.write('0')
-            f.close()
-            f = open(session['pid']+'flag.txt','w')
-            f.write('1')
-            f.close()
+            open(session['pid']+'word_no.txt','w').write('0')
+            open(session['pid']+'flag.txt','w').write('1')
             #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-            f = open(session['pid']+'word_sentence_no.txt','r')
-            temp1 = f.read()
-            f.close()
-            f = open(session['pid']+'word_no.txt','r')
-            temp2 = f.read()
-            f.close()
+            temp1 = open(session['pid']+'word_sentence_no.txt','r').read()
+            temp2 = open(session['pid']+'word_no.txt','r').read()
             status = store_word_state(session['pid'], int(temp1), int(temp2))
     #if session['word_sentence_no'] >= len(sentence_words):
-    f = open(session['pid']+'word_sentence_no.txt','r')
-    temp = f.read()
-    f.close()
+    temp = open(session['pid']+'word_sentence_no.txt','r').read()
     if int(temp) >= len(sentence_words):
         #TODO: display the final template and logout
         return render_template('end.html')
     #for words in sentence_words[session['word_sentence_no']]:
-    f = open(session['pid']+'word_sentence_no.txt','r')
-    temp = f.read()
-    f.close()
+    temp = open(session['pid']+'word_sentence_no.txt','r').read()
     for words in sentence_words[int(temp)]:
         print("words: ", words)
-        f = open(session['pid']+'word_no.txt','r')
-        t = f.read()
-        f.close()
         if words.strip() is '':
             i += 1
             #session['word_no'] += 1
-            f = open(session['pid']+'word_no.txt','r')
-            temp = f.read()
-            f.close()
-            f = open(session['pid']+'word_no.txt','w')
-            f.write(str(int(temp) + 1))
-            f.close()
+            temp = open(session['pid']+'word_no.txt','r').read()
+            open(session['pid']+'word_no.txt','w').write(str(int(temp) + 1))
             print("continuing 1")
             continue
         #check if the script has reached the word to be displayed
         #if i == session['word_no']:
-        if i == int(t):
+        if i == int(open(session['pid']+'word_no.txt','r').read().strip()):
             #store this state in the words_state collection
             #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-            f = open(session['pid']+'word_sentence_no.txt','r')
-            temp1 = f.read()
-            f.close()
-            f = open(session['pid']+'word_no.txt','r')
-            temp2 = f.read()
-            f.close()
+            temp1 = open(session['pid']+'word_sentence_no.txt','r').read()
+            temp2 = open(session['pid']+'word_no.txt','r').read()
             status = store_word_state(session['pid'], int(temp1), int(temp2))
             #session['word_no'] += 1
-            f = open(session['pid']+'word_no.txt','r')
-            temp = f.read()
-            f.close()
-            f = open(session['pid']+'word_no.txt','w')
-            f.write(str(int(temp) + 1))
-            f.close()
+            temp = open(session['pid']+'word_no.txt','r').read()
+            open(session['pid']+'word_no.txt','w').write(str(int(temp) + 1))
             #pass the set of the word and its synonyms to the template
             #retrieve the synonyms as a set
             synonyms = get_synonyms(words)#words_dict['data'][session['word_sentence_no']][i])
@@ -528,49 +345,30 @@ def words():
                 if synonyms == None:
                     i += 1
                     #session['word_no'] += 1
-                    f = open(session['pid']+'word_no.txt','r')
                     temp = open(session['pid']+'word_no.txt','r').read()
-                    f.close()
-                    f = open(session['pid']+'word_no.txt','w')
-                    f.write(str(int(temp) + 1))
-                    f.close()
+                    open(session['pid']+'word_no.txt','w').write(str(int(temp) + 1))
                     print("continuing 2")
                     continue
             synonyms.add(words)#_dict['data'][session['word_sentence_no']][i])
             if len(synonyms) == 0:
                 i += 1
                 #session['word_no'] += 1
-                f = open(session['pid']+'word_no.txt','r')
-                temp = f.read()
-                f.close()
-                f = open(session['pid']+'word_no.txt','w')
-                f.write(str(int(temp) + 1))
-                f.close()
+                temp = open(session['pid']+'word_no.txt','r').read()
+                open(session['pid']+'word_no.txt','w').write(str(int(temp) + 1))
                 print("continuing 3")
                 continue
-                print("HERE")
+            print("idhar")
             return render_template('words.html', pid=session['pid'], words = [synonyms])
         i += 1
     ##############
     #session['word_sentence_no'] += 1
-    f = open(session['pid']+'word_sentence_no.txt','r')
-    temp = f.read()
-    f.close()
-    f = open(session['pid']+'word_sentence_no.txt','w')
-    f.write(str(int(temp) + 1))
-    f.close()
-
-    f = open(session['pid']+'flag.txt','w')
-    f.write('1')
-    f.close()
+    temp = open(session['pid']+'word_sentence_no.txt','r').read()
+    open(session['pid']+'word_sentence_no.txt','w').write(str(int(temp) + 1))
+    open(session['pid']+'flag.txt','w').write('1')
     #session['word_no'] = 0
     #status = store_word_state(session['pid'], session['word_sentence_no'], session['word_no'])
-    f = open(session['pid']+'word_sentence_no.txt','r')
-    temp1 = f.read()
-    f.close()
-    f = open(session['pid']+'word_no.txt','r')
-    temp2 = f.read()
-    f.close()
+    temp1 = open(session['pid']+'word_sentence_no.txt','r').read()
+    temp2 = open(session['pid']+'word_no.txt','r').read()
     status = store_word_state(session['pid'], int(temp1), int(temp2))
     ###############
     return render_template('words.html', pid=session['pid'], words={'Select any option to proceed':[]})

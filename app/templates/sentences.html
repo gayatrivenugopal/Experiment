@@ -57,15 +57,14 @@
         url: '/store_tokens',
         type: 'POST',
         dataType: 'json',
+        async:false,
         data: JSON.stringify(data),
         contentType: "application/json; charset=UTF-8",
         success: function(response) {
-//alert(response)
-          console.log(response);
-          if (response['sentence_flag'] == 0)
-            $('#frm').submit();
+          if (response['sentence_flag'] == 0) {
+            $('#frm').attr('action', 'http://107.191.96.150:5000/sentence')
+            $('#frm').submit();}
           else {
-//alert('here')
             $("#sentence").html(response['sentence']);
             $("#pid").html(response['pid']);
             $("#number").html(response['sentence_number']);
