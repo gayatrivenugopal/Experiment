@@ -307,13 +307,23 @@ def words():
         f.close()
     #retrieve the words from the database
     words_dict = get_words(session['pid'])
+    print('words dict ', words_dict)
     sentence_words = []
     if words_dict['status'] == 1 and words_dict['data'] != None:
+        #i = 0
+        print("length of word dict data items ", len(words_dict['data'].items()))
         for key,value in words_dict['data'].items():
             sentence_words.append(value)
+            #print(i)
+            #input()
+            #i+= 1
     else:
         return render_template('end.html')
-
+    print(sentence_words)
+    print(len(sentence_words))
+    ##############
+    #return ''
+    ############
     if len(sentence_words) == 0:
         #session['word_sentence_no'] += 1
         f = open(session['pid']+'word_sentence_no.txt','w')
@@ -344,7 +354,7 @@ def words():
     f = open(session['pid']+'flag.txt','r')
     temp = f.read()
     f.close()
-    if temp == 1:
+    if temp == '1':
         #session['word_no'] = 0
         f = open(session['pid']+'word_no.txt','w')
         f.write('0')
@@ -371,6 +381,8 @@ def words():
         f.close()
         print("temp: ",temp)
         print("sentence words: ", sentence_words)
+        if int(temp) >= len(sentence_words):
+            return render_template('end.html')
         if int(temp2) >= len(sentence_words[int(temp)]):
 	        f = open(session['pid']+'flag.txt','w')
 	        f.write('1')
@@ -415,6 +427,8 @@ def words():
     f.close()
     print("sentence words: ", sentence_words)
     print("temp1 and temp3: ", temp1)
+    #return ''
+        
     #if 'word_no' in session and sentence_words[session['word_sentence_no']] != 0  and session['word_no'] >= len(sentence_words[session['word_sentence_no']]):
     if len(sentence_words[int(temp1)]) != 0  and int(temp2) >= len(sentence_words[int(temp3)]):
         #increment the word_sentence_no in the session

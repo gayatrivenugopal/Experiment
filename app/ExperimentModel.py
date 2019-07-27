@@ -190,6 +190,7 @@ def words_state_exists(pid):
             return {'state': 1, 'data': cursor}
     except Exception as e:
         return {'state': -1, 'data': str(e)}
+counter = 0
 
 def store_words(pid, words, sentence_number):
     """ Store the words selected by the participant.
@@ -205,6 +206,8 @@ def store_words(pid, words, sentence_number):
     """
     try:
         database.ComplexWords.insert_one({'pid': pid, 'words': words, 'sentence_number': sentence_number})
+        counter += 1
+        print('counter: ', counter)
         return {'status': 1, 'data': None}
     except Exception as e:
         return {'status': -1, 'data': str(e)}
